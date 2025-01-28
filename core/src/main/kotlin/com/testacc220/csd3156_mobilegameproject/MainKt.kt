@@ -1,24 +1,40 @@
 package com.testacc220.csd3156_mobilegameproject
 
+import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Game
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.assets.loaders.FileHandleResolver
+import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.audio.Music
 import com.badlogic.gdx.audio.Sound
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.utils.GdxRuntimeException
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 import ktx.assets.disposeSafely
 
+class CrossPlatformFileHandleResolver : FileHandleResolver {
+    override fun resolve(fileName: String): FileHandle {
+        return if (Gdx.app.type == Application.ApplicationType.Android) {
+            Gdx.files.internal(fileName)
+        } else {
+            Gdx.files.internal("assets/$fileName")
+        }
+    }
+}
+
 class MainKt : Game() {
     lateinit var camera: OrthographicCamera
     lateinit var viewport: Viewport
     lateinit var batch: SpriteBatch
+    private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
 
     override fun create() {
         Gdx.app.log("CWD", "Current Working Directory: ${System.getProperty("user.dir")}")
@@ -28,15 +44,15 @@ class MainKt : Game() {
         camera.setToOrtho(false, 800f, 480f)
 
         // Initialize the viewport
-        viewport = FitViewport(800f, 480f, camera)
+        val screenWidth = Gdx.graphics.width.toFloat()
+        val screenHeight = Gdx.graphics.height.toFloat()
+        viewport = FitViewport(screenWidth, screenHeight, camera)
 
         // Initialize the SpriteBatch
         batch = SpriteBatch()
 
-        val assetManager = AssetSingleton.assetManager
-
         // Enqueue assets for loading
-        enqueueAssets(assetManager)
+        enqueueAssets()
 
         // Load all assets synchronously
         assetManager.finishLoading()
@@ -49,62 +65,42 @@ class MainKt : Game() {
         }
 
         // Transition directly to GameScene
-        setScreen(GameScene(this))
+        setScreen(GameScene(this, assetManager))
     }
 
-    /**
-     * Enqueue all essential assets for loading.
-     */
-    private fun enqueueAssets(assetManager: AssetManager) {
+    private fun enqueueAssets() {
         try {
-            // Load the skin and its dependencies
-//            loadAsset(assetManager, "assets/skins/expeeui/expee-ui.atlas", TextureAtlas::class.java)
-//            loadAsset(assetManager, "assets/skins/expeeui/expee-ui.json", Skin::class.java)
-//            loadAsset(assetManager, "assets/ui/uiskin.atlas", TextureAtlas::class.java)
-//            loadAsset(assetManager, "assets/ui/uiskin.json", Skin::class.java)
+            fun assertFileExists(filePath: String) {
+                if (!Gdx.files.internal(filePath).exists()) {
+                    throw RuntimeException("File not found: $filePath. Please check the path.")
+                }
+            }
+
+            // Load the skin with its dependencies
+            assertFileExists("skins/expeeui/expee-ui.atlas")
+            assetManager.load("skins/expeeui/expee-ui.atlas", TextureAtlas::class.java)
+
+            assertFileExists("skins/expeeui/expee-ui.json")
+            assetManager.load(
+                "skins/expeeui/expee-ui.json",
+                Skin::class.java,
+                SkinLoader.SkinParameter("skins/expeeui/expee-ui.atlas")
+            )
 
             // Load the background texture
-            loadAsset(assetManager, "assets/parallax_forest_pack/layers/parallax-forest-back-trees.png", com.badlogic.gdx.graphics.Texture::class.java)
+            assertFileExists("parallax_forest_pack/layers/parallax-forest-back-trees.png")
+            assetManager.load("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
 
-            // Load fonts
-//            loadAsset(assetManager, "assets/fonts/default.fnt", BitmapFont::class.java)
-
-            // Load audio assets
-//            loadAsset(assetManager, "assets/audio/music/theme.ogg", Music::class.java)
-//            loadAsset(assetManager, "assets/audio/sound/click.wav", Sound::class.java)
-
-            // Load any additional assets here
+            // Load additional assets as needed
         } catch (e: RuntimeException) {
-            // Log and rethrow the exception for debugging
             Gdx.app.error("AssetLoader", "Error loading assets: ${e.message}", e)
             throw e
         }
     }
 
-    /**
-     * Wraps AssetManager.load to ensure the asset is successfully loaded.
-     * Throws an exception if the asset is not loaded after finishLoading().
-     */
-    private fun <T> loadAsset(assetManager: AssetManager, fileName: String, type: Class<T>) {
-        // Log the loading attempt for debugging
-        Gdx.app.log("AssetLoader", "Loading asset: $fileName")
-
-        // Enqueue the asset for loading
-        assetManager.load(fileName, type)
-        assetManager.finishLoading()
-
-        // Verify the asset is loaded
-        if (!assetManager.isLoaded(fileName)) {
-            throw RuntimeException("Failed to load asset: $fileName. Please check the filepath.")
-        }
-
-        // Log success
-        Gdx.app.log("AssetLoader", "Successfully loaded asset: $fileName")
-    }
-
     override fun dispose() {
         super.dispose()
         batch.dispose()
-        AssetSingleton.assetManager.disposeSafely()
+        assetManager.disposeSafely()
     }
 }

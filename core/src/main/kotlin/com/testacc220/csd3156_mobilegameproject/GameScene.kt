@@ -27,10 +27,8 @@ import ktx.graphics.use
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 
-class GameScene(private val game: MainKt) : KtxScreen {
-    // Access the singleton AssetManager
-    private val assetManager = AssetSingleton.assetManager
 
+class GameScene(private val game: MainKt, private val assetManager: AssetManager) : KtxScreen {
     // Background texture
     private var background: Texture? = null
 
@@ -43,18 +41,16 @@ class GameScene(private val game: MainKt) : KtxScreen {
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
 
-        // Retrieve the skin
         try {
-            skin = assetManager.get("assets/skins/expeeui/expee-ui.json", Skin::class.java)
-        } catch (e: GdxRuntimeException) {
+            skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
+        } catch (e: Exception) {
             Gdx.app.error("GameScene", "Failed to load skin.", e)
             return
         }
 
-        // Retrieve the background texture
         try {
-            background = assetManager.get("assets/parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
-        } catch (e: GdxRuntimeException) {
+            background = assetManager.get("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
+        } catch (e: Exception) {
             Gdx.app.error("GameScene", "Failed to load background texture.", e)
         }
 
@@ -66,20 +62,25 @@ class GameScene(private val game: MainKt) : KtxScreen {
         table.add(gameLabel)
         stage.addActor(table)
 
-        // Set input processor if needed
+        // Set input processor
         Gdx.input.inputProcessor = stage
     }
 
     override fun render(delta: Float) {
         clearScreen(0f, 0f, 0f)
 
+        val viewportWidth = stage.viewport.worldWidth
+        val viewportHeight = stage.viewport.worldHeight
+
         game.batch.use {
-            it.draw(background, 0f, 0f, 800f, 480f)
+            it.draw(background, 0f, 0f, viewportWidth, viewportHeight)
         }
+
+        stage.act(delta)
+        stage.draw()
     }
 
     override fun resize(width: Int, height: Int) {
-        // Update the viewport
         stage.viewport.update(width, height, true)
     }
 
@@ -90,6 +91,5 @@ class GameScene(private val game: MainKt) : KtxScreen {
     override fun dispose() {
         // Dispose of the stage and UI components
         stage.disposeSafely()
-        // Note: Do not dispose of skin or background here as they are managed by AssetManager
     }
 }
