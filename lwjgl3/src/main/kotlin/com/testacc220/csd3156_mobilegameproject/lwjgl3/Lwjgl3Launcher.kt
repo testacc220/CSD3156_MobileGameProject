@@ -9,6 +9,8 @@ import com.testacc220.csd3156_mobilegameproject.MainKt
 /** Launches the desktop (LWJGL3) application. */
 fun main() {
     // This handles macOS support and helps on Windows.
+    println("Current Working Directory: ${System.getProperty("user.dir")}")
+
     if (StartupHelper.startNewJvmIfRequired())
       return
     Lwjgl3Application(MainKt(), Lwjgl3ApplicationConfiguration().apply {
