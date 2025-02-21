@@ -1,6 +1,7 @@
 package com.testacc220.csd3156_mobilegameproject
 
 import PhysicsEngine
+import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.math.Vector2
@@ -15,9 +16,22 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.InputAdapter
+import com.badlogic.gdx.assets.loaders.FileHandleResolver
+import com.badlogic.gdx.assets.loaders.SkinLoader
+import com.badlogic.gdx.files.FileHandle
 
+class CrossPlatformFileHandleResolver : FileHandleResolver {
+    override fun resolve(fileName: String): FileHandle {
+        return if (Gdx.app.type == Application.ApplicationType.Android) {
+            Gdx.files.internal(fileName)
+        } else {
+            Gdx.files.internal("assets/$fileName")
+        }
+    }
+}
 
-class GameScene(private val game: MainKt, private val assetManager: AssetManager) : KtxScreen {
+class GameScene(private val game: MainKt) : KtxScreen {
+    private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
     private val gameState = GameState()
     private var background: Texture? = null
     private lateinit var skin: Skin
@@ -34,6 +48,10 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
         physicsEngine.init()
+
+        enqueueAssets()
+
+        assetManager.finishLoading()
 
         try {
             skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
@@ -106,8 +124,7 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
 
             // Draw all gems through gameState
             gameState.getGameObjects().getActiveGems().forEach { gem ->
-                // Draw gem texture here once we have them
-                // For now, we could draw a colored rectangle or circle
+
             }
         }
 
@@ -124,5 +141,31 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
 
     override fun dispose() {
         stage.disposeSafely()
+        assetManager.disposeSafely()
+    }
+
+    private fun enqueueAssets() {
+        try {
+            fun assertFileExists(filePath: String) {
+                if (!Gdx.files.internal(filePath).exists()) {
+                    throw RuntimeException("File not found: $filePath. Please check the path.")
+                }
+            }
+
+            // Enqueue skin assets
+            assertFileExists("skins/expeeui/expee-ui.atlas")
+            assetManager.load("skins/expeeui/expee-ui.atlas", com.badlogic.gdx.graphics.g2d.TextureAtlas::class.java)
+
+            assertFileExists("skins/expeeui/expee-ui.json")
+            assetManager.load("skins/expeeui/expee-ui.json", Skin::class.java, SkinLoader.SkinParameter("skins/expeeui/expee-ui.atlas"))
+
+            // Enqueue background texture
+            assertFileExists("parallax_forest_pack/layers/parallax-forest-back-trees.png")
+            assetManager.load("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
+
+        } catch (e: RuntimeException) {
+            Gdx.app.error("AssetLoader", "Error loading assets: ${e.message}", e)
+            throw e
+        }
     }
 }
