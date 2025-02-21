@@ -65,7 +65,7 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
 
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
-
+        physicsEngine.init()
         try {
             skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
         } catch (e: Exception) {
