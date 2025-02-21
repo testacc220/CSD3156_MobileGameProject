@@ -38,6 +38,7 @@ class GameState {
         val randomX = (0 until GameBoard.GRID_WIDTH).random()
         val (screenX, screenY) = gameBoard.gridToScreenCoordinates(randomX, 0)
         val newGem = Gem(
+            uid = Gem.generateUid(),
             x = screenX,
             y = screenY - GameBoard.GEM_SIZE,
             tier = 1
@@ -163,8 +164,9 @@ class GameState {
                     gameBoard.grid[pos.y][pos.x] = null
                 }
 
-                // Create upgraded gem
+                // Create upgraded gem with new UID
                 val upgradedGem = Gem(
+                    uid = Gem.generateUid(),
                     x = screenX,
                     y = screenY,
                     tier = 2

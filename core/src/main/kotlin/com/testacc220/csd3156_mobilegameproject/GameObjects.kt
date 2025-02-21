@@ -38,4 +38,12 @@ class GameObjects {
     fun getActiveGems(): List<Gem> = activeGems
     fun getTier1Gems(): List<Gem> = tier1Gems
     fun getTier2Gems(): List<Gem> = tier2Gems
+
+    fun getGemByUid(uid: Long): Gem? {
+        return activeGems.find { it.uid == uid }
+    }
+
+    fun removeGemByUid(uid: Long) {
+        activeGems.find { it.uid == uid }?.let { removeGem(it) }
+    }
 }

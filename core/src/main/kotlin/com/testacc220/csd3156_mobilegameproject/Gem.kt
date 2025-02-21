@@ -1,6 +1,7 @@
 package com.testacc220.csd3156_mobilegameproject
 
 data class Gem(
+    val uid: Long,
     var x: Float,
     var y: Float,
     var tier: Int = 1,
@@ -12,6 +13,10 @@ data class Gem(
     var targetY: Float = y,
     var moveSpeed: Float = 500f  // pixels per second
 ) {
+    companion object {
+        private var nextUid = 0L
+        fun generateUid(): Long = nextUid++
+    }
     fun update(deltaTime: Float) {
         if (isMoving) {
             // Move towards target position
