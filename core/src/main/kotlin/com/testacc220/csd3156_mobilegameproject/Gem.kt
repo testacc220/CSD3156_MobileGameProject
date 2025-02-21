@@ -1,9 +1,14 @@
 package com.testacc220.csd3156_mobilegameproject
 
+enum class GemType {
+    HEART, GEM, STAR, PENTAGON
+}
+
 data class Gem(
     val uid: Long,
     var x: Float,
     var y: Float,
+    var type: GemType,
     var tier: Int = 1,
     var width: Float = 64f,
     var height: Float = 64f,

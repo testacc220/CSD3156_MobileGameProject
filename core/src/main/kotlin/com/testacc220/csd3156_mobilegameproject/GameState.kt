@@ -49,6 +49,7 @@ class GameState {
             uid = Gem.generateUid(),
             x = randomX,
             y = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT + GameBoard.GEM_SIZE,
+            GemType.HEART, // Hardcoded for now
             tier = 1
         )
         gameBoard.currentGem = newGem
@@ -102,6 +103,7 @@ class GameState {
                 uid = Gem.generateUid(),
                 x = centerX,
                 y = centerY,
+                GemType.HEART, // Hardcoded for now
                 tier = 2
             )
             gameObjects.addGem(upgradedGem)

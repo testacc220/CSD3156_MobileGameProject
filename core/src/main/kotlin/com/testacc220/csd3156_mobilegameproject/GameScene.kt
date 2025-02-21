@@ -19,6 +19,9 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.assets.loaders.FileHandleResolver
 import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.files.FileHandle
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -32,6 +35,7 @@ class CrossPlatformFileHandleResolver : FileHandleResolver {
 
 class GameScene(private val game: MainKt) : KtxScreen {
     private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
+    private val shapeRenderer = ShapeRenderer()
     private val gameState = GameState()
     private var background: Texture? = null
     private lateinit var skin: Skin
@@ -45,6 +49,12 @@ class GameScene(private val game: MainKt) : KtxScreen {
     private var lastTouchX = 0f
     private var lastTouchY = 0f
 
+    // Cached resources
+    private lateinit var yellowHeartTexture: Texture
+    private lateinit var yellowGemTexture: Texture
+    private lateinit var yellowStarTexture: Texture
+    private lateinit var yellowPentagonTexture: Texture
+
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
         physicsEngine.init()
@@ -56,6 +66,11 @@ class GameScene(private val game: MainKt) : KtxScreen {
         try {
             skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
             background = assetManager.get("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
+
+            yellowHeartTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_48.png", Texture::class.java)
+            yellowGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_46.png", Texture::class.java)
+            yellowStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png", Texture::class.java)
+            yellowPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png", Texture::class.java)
         } catch (e: Exception) {
             Gdx.app.error("GameScene", "Failed to load assets.", e)
             return
@@ -115,16 +130,26 @@ class GameScene(private val game: MainKt) : KtxScreen {
         gameState.update(delta)
         physicsEngine.update(delta)
 
-        // Render game
+        // Render background
         game.batch.use { batch ->
-            // Draw background
             background?.let { bg ->
                 batch.draw(bg, 0f, 0f, viewportWidth, viewportHeight)
             }
+        }
 
-            // Draw all gems through gameState
+        renderPlayArea()
+
+        // Render game objects
+        game.batch.use { batch ->
             gameState.getGameObjects().getActiveGems().forEach { gem ->
-
+                val textureToUse = when (gem.type) {
+                    GemType.HEART -> yellowHeartTexture
+                    GemType.GEM -> yellowGemTexture
+                    GemType.STAR -> yellowStarTexture
+                    GemType.PENTAGON -> yellowPentagonTexture
+                    else -> yellowHeartTexture // Fallback to yellow heart
+                }
+                batch.draw(textureToUse, gem.x, gem.y, gem.width, gem.height)
             }
         }
 
@@ -132,6 +157,31 @@ class GameScene(private val game: MainKt) : KtxScreen {
         gameLabel.setText("Score: ${gameState.getScore()}")
         stage.act(delta)
         stage.draw()
+    }
+
+    private fun renderPlayArea() {
+        val board = gameState.getGameBoard()
+        val playX = board.playAreaOffsetX
+        val playY = board.playAreaOffsetY
+        val playWidth = GameBoard.PLAY_AREA_WIDTH
+        val playHeight = GameBoard.PLAY_AREA_HEIGHT
+
+        shapeRenderer.projectionMatrix = stage.camera.combined
+
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0.3f, 0.3f, 0.3f, 0.5f) // 50% opacity grey
+        shapeRenderer.rect(playX, playY, playWidth, playHeight)
+        shapeRenderer.end()
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        shapeRenderer.color = Color.WHITE
+        shapeRenderer.rect(playX, playY, playWidth, playHeight)
+        shapeRenderer.end()
+
+        Gdx.gl.glDisable(GL20.GL_BLEND)
     }
 
     override fun resize(width: Int, height: Int) {
@@ -142,6 +192,7 @@ class GameScene(private val game: MainKt) : KtxScreen {
     override fun dispose() {
         stage.disposeSafely()
         assetManager.disposeSafely()
+        shapeRenderer.dispose()
     }
 
     private fun enqueueAssets() {
@@ -162,6 +213,29 @@ class GameScene(private val game: MainKt) : KtxScreen {
             // Enqueue background texture
             assertFileExists("parallax_forest_pack/layers/parallax-forest-back-trees.png")
             assetManager.load("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
+
+            // Enqueue gem textures
+            val yellowHeartFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_48.png"
+            val yellowGemFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_46.png"
+            val yellowStarFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png"
+            val yellowPentagonFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png"
+
+            // Yellow Heart
+            assertFileExists(yellowHeartFP)
+            assetManager.load(yellowHeartFP, Texture::class.java)
+
+            // Yellow Gem
+            assertFileExists(yellowGemFP)
+            assetManager.load(yellowGemFP, Texture::class.java)
+
+            // Yellow Star
+            assertFileExists(yellowStarFP)
+            assetManager.load(yellowStarFP, Texture::class.java)
+
+            // Yellow Pentagon
+            assertFileExists(yellowPentagonFP)
+            assetManager.load(yellowPentagonFP, Texture::class.java)
+
 
         } catch (e: RuntimeException) {
             Gdx.app.error("AssetLoader", "Error loading assets: ${e.message}", e)

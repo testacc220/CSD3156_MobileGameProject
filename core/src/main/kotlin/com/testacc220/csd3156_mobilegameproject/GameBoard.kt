@@ -3,8 +3,8 @@ package com.testacc220.csd3156_mobilegameproject
 class GameBoard {
     private val gameObjects = GameObjects() // Add if you need direct access
     companion object {
-        const val PLAY_AREA_WIDTH = 360f  // 6 * 64 (previous grid width)
-        const val PLAY_AREA_HEIGHT = 512f // 8 * 64 (previous grid height)
+        var PLAY_AREA_WIDTH = 0f // Dynamically calculated based on display resolution
+        var PLAY_AREA_HEIGHT = 0f
         const val GEM_SIZE = 64f
         const val SCREEN_PADDING = 16f
     }
@@ -22,6 +22,10 @@ class GameBoard {
     fun calculateScreenLayout(screenWidth: Float, screenHeight: Float) {
         this.screenWidth = screenWidth
         this.screenHeight = screenHeight
+
+        // Scale the play area width & height based on screen size
+        PLAY_AREA_WIDTH = screenWidth * 0.5f // 50% of screen width
+        PLAY_AREA_HEIGHT = screenHeight * 0.9f // 70% of screen height
 
         // Center the play area on screen
         playAreaOffsetX = (screenWidth - PLAY_AREA_WIDTH) / 2
