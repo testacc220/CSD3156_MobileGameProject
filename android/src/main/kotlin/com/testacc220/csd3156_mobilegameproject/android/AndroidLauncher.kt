@@ -34,27 +34,27 @@ class AndroidLauncher : AndroidApplication() {
 }
 
 fun testFirestore() {
-    Log.d("sdsds", "DocumentSnapshot entered")
+    //Log.d("sdsds", "DocumentSnapshot entered")
     val db = FirebaseFirestore.getInstance()
-    val usrName = "zzz"
-//    Log.d("sdsds", "instance added ok")
-//    val testData = hashMapOf(
-//        "highscore" to 24,
-//        "password" to "ricky",
-//        "username" to "xiaoming",
-//    )
-//    Log.d("sdsds", "hashmap added ok")
-//
-//    db.collection("PlayerData")
-//        .add(testData)
-//        .addOnSuccessListener {
-//            Log.d("sdsds", "DocumentSnapshot added ok")
-//        }
-//        .addOnFailureListener {
-//            Log.d("sdsds", "DocumentSnapshot failed ok")
-//        }
+    val usrName = "PukiMan2"
+    //Log.d("sdsds", "instance added ok")
+    val testData = hashMapOf(
+        "highscore" to 24211,
+        "password" to "rickyssss",
+        "username" to "xiaomings ex",
+    )
+    //Log.d("sdsds", "hashmap added ok")
 
-    db.collection("PlayerData")
+    db.collection("PlayerData").document("$usrName").set(testData)
+    //db.collection("PlayerData").add(testData)
+        .addOnSuccessListener {
+            Log.d("sdsds", "DocumentSnapshot added ok")
+        }
+        .addOnFailureListener {
+            Log.d("sdsds", "DocumentSnapshot failed ok")
+        }
+
+    /*db.collection("PlayerData")
 //        .orderBy("highscore",
 //            Query.Direction.DESCENDING)
         .whereEqualTo("username", usrName)
@@ -66,6 +66,6 @@ fun testFirestore() {
                                         if(username != null && hs != null)
                                             Log.w("Hello", "managed to read value: $hs" )
             }
-        }
+        }*/
 }
 
