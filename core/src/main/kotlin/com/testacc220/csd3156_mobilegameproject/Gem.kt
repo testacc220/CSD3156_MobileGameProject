@@ -29,7 +29,8 @@ data class Gem(
             val dy = targetY - y
             val distance = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
 
-            if (distance < 1f) {
+            val EPSILON = 0.5f
+            if (distance < EPSILON) {
                 // Snap to target position when very close
                 x = targetX
                 y = targetY
@@ -37,7 +38,8 @@ data class Gem(
             } else {
                 // Move towards target
                 val moveAmount = moveSpeed * deltaTime
-                val ratio = moveAmount / distance
+                val ratio = (moveAmount / distance).coerceAtMost(1f)
+
                 x += dx * ratio
                 y += dy * ratio
             }

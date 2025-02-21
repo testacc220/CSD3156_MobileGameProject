@@ -54,6 +54,8 @@ class GameScene(private val game: MainKt) : KtxScreen {
     private lateinit var yellowGemTexture: Texture
     private lateinit var yellowStarTexture: Texture
     private lateinit var yellowPentagonTexture: Texture
+    private lateinit var tier1GemTile: Texture
+    private lateinit var tier2GemTile: Texture
 
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
@@ -71,15 +73,22 @@ class GameScene(private val game: MainKt) : KtxScreen {
             yellowGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_46.png", Texture::class.java)
             yellowStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png", Texture::class.java)
             yellowPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png", Texture::class.java)
+
+            tier1GemTile = assetManager.get("BackTile_15.png", Texture::class.java)
+            tier2GemTile = assetManager.get("BackTile_01.png", Texture::class.java)
         } catch (e: Exception) {
             Gdx.app.error("GameScene", "Failed to load assets.", e)
             return
         }
 
         // Initialize UI components
-        gameLabel = Label("Game Started!", skin)
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+        labelStyle.font.data.setScale(7f)
+        gameLabel = Label("Score: 0", labelStyle)
         table.setFillParent(true)
+        table.top().left().pad(20f)  // Align to the top-left with padding
         table.add(gameLabel)
+
         stage.addActor(table)
 
         // Set up input handling
@@ -142,6 +151,18 @@ class GameScene(private val game: MainKt) : KtxScreen {
         // Render game objects
         game.batch.use { batch ->
             gameState.getGameObjects().getActiveGems().forEach { gem ->
+
+                val tileTexture = when (gem.tier) {
+                    1 -> tier1GemTile
+                    2 -> tier2GemTile
+                    else -> tier1GemTile // Default to tier 1 tile if unknown
+                }
+
+                val tilePadding = 8f
+                batch.draw(tileTexture, gem.x - tilePadding / 2,
+                    gem.y - tilePadding / 2, gem.width + tilePadding,
+                    gem.height + tilePadding)
+
                 val textureToUse = when (gem.type) {
                     GemType.HEART -> yellowHeartTexture
                     GemType.GEM -> yellowGemTexture
@@ -220,6 +241,9 @@ class GameScene(private val game: MainKt) : KtxScreen {
             val yellowStarFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png"
             val yellowPentagonFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png"
 
+            val tier1GemTileFP = "BackTile_15.png"
+            val tier2GemTileFP = "BackTile_01.png"
+
             // Yellow Heart
             assertFileExists(yellowHeartFP)
             assetManager.load(yellowHeartFP, Texture::class.java)
@@ -235,6 +259,12 @@ class GameScene(private val game: MainKt) : KtxScreen {
             // Yellow Pentagon
             assertFileExists(yellowPentagonFP)
             assetManager.load(yellowPentagonFP, Texture::class.java)
+
+            assertFileExists(tier1GemTileFP)
+            assetManager.load(tier1GemTileFP, Texture::class.java)
+
+            assertFileExists(tier2GemTileFP)
+            assetManager.load(tier2GemTileFP, Texture::class.java)
 
 
         } catch (e: RuntimeException) {
