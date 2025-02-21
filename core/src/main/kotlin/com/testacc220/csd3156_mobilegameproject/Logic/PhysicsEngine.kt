@@ -15,12 +15,18 @@ import com.badlogic.gdx.physics.box2d.World
 
 
 class ListenerClass : ContactListener {
-    override fun endContact(contact: Contact) {
-        Gdx.app.log("Contact Listener", "End Contact")
+    override fun beginContact(contact: Contact) {
+        // Get the two colliding bodies
+        val bodyA = contact.fixtureA.body
+        val bodyB = contact.fixtureB.body
+
+        Gdx.app.log("Contact Listener", "Begin Contact between bodies at: " +
+            "A(${bodyA.position.x}, ${bodyA.position.y}) " +
+            "B(${bodyB.position.x}, ${bodyB.position.y})")
     }
 
-    override fun beginContact(contact: Contact) {
-        Gdx.app.log("Contact Listener", "Begin Contact")
+    override fun endContact(contact: Contact) {
+        Gdx.app.log("Contact Listener", "End Contact")
     }
 
     override fun preSolve(contact: Contact?, oldManifold: Manifold?) {
@@ -30,20 +36,19 @@ class ListenerClass : ContactListener {
     override fun postSolve(contact: Contact?, impulse: ContactImpulse?) {
         Gdx.app.log("Contact Listener", "Post Solve")
     }
-
-
 }
 
 class PhysicsEngine {
     private val world: World = World(Vector2(0f, -10f), true)
+    private val bodies = mutableMapOf<Long, Body>()
 
 
     fun init()
     {
         Gdx.app.log("Physics System", "Physics init")
-
         world.setContactListener(ListenerClass())
 
+        // Create ground
         val groundBodyDef = BodyDef()
         groundBodyDef.position.set(Vector2(0f, -20f))
         val groundBody = world.createBody(groundBodyDef)
@@ -59,7 +64,7 @@ class PhysicsEngine {
         groundBox.dispose()
 //
 //
-        // First we create a body definition
+        // First we create a body definition (Create test body)
         val bodyDef = BodyDef()
 
 // We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
@@ -120,4 +125,30 @@ class PhysicsEngine {
 
         circle.dispose()
     }
+
+    fun updateGemPosition(uid: Long, x: Float, y: Float) {
+        bodies[uid]?.setTransform(x, y, 0f)
+    }
+
+    fun createGemBody(uid: Long, x: Float, y: Float) {
+        val bodyDef = BodyDef()
+        bodyDef.type = BodyType.DynamicBody
+        bodyDef.position.set(x, y)
+
+        val body = world.createBody(bodyDef)
+        val circle = CircleShape()
+        circle.radius = 6f
+
+        val fixtureDef = FixtureDef()
+        fixtureDef.shape = circle
+        fixtureDef.density = 0.5f
+        fixtureDef.friction = 0.4f
+        fixtureDef.restitution = 0.6f
+
+        body.createFixture(fixtureDef)
+        circle.dispose()
+
+        bodies[uid] = body
+    }
+
 }

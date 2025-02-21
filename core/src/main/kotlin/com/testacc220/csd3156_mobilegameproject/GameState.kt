@@ -1,9 +1,15 @@
 package com.testacc220.csd3156_mobilegameproject
+import com.badlogic.gdx.math.Vector2
+import kotlin.math.sqrt
 
 class GameState {
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
-    private var isProcessingMatches = false
+    private var isProcessingMerges  = false
+
+    companion object {
+        const val MERGE_DISTANCE = 70f  // Distance threshold for merging gems
+    }
 
     enum class Orientation {
         VERTICAL,
@@ -21,202 +27,99 @@ class GameState {
     fun update(deltaTime: Float) {
         gameBoard.update(deltaTime)
 
-        // If grid is stable and we're processing matches, check for matches
-        if (gameBoard.isGridStable() && isProcessingMatches) {
-            processMatches()
-            isProcessingMatches = false
+        // If everything is stable, check for potential merges
+        if (gameBoard.isStable() && !isProcessingMerges) {
+            checkForMerges()
         }
 
         // Spawn new gem if needed
-        if (gameBoard.currentGem == null && gameBoard.isGridStable() && !isProcessingMatches) {
+        if (gameBoard.currentGem == null && gameBoard.isStable() && !isProcessingMerges) {
             spawnGem()
         }
     }
 
     // Spawn a new gem at the top of the screen
     private fun spawnGem() {
-        val randomX = (0 until GameBoard.GRID_WIDTH).random()
-        val (screenX, screenY) = gameBoard.gridToScreenCoordinates(randomX, 0)
+        // Random x position within play area bounds
+        val minX = gameBoard.playAreaOffsetX + GameBoard.GEM_SIZE/2
+        val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE/2
+        val randomX = minX + (maxX - minX) * Math.random().toFloat()
+
         val newGem = Gem(
             uid = Gem.generateUid(),
-            x = screenX,
-            y = screenY - GameBoard.GEM_SIZE,
+            x = randomX,
+            y = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT + GameBoard.GEM_SIZE,
             tier = 1
         )
         gameBoard.currentGem = newGem
-        gameObjects.addGem(newGem) // Add to container
+        gameObjects.addGem(newGem)
     }
 
-    // Try to place the current gem at the specified grid position
-    fun tryPlaceGem(gridX: Int, gridY: Int): Boolean {
-        val currentGem = gameBoard.currentGem ?: return false
+    // Check for potential merges based on proximity
+    private fun checkForMerges() {
+        val gems = gameObjects.getActiveGems()
+        val mergedGems = mutableSetOf<Gem>()
 
-        if (isValidPlacement(gridX, gridY)) {
-            val (screenX, screenY) = gameBoard.gridToScreenCoordinates(gridX, gridY)
-            currentGem.moveTo(screenX, screenY)
-            gameBoard.grid[gridY][gridX] = currentGem
-            gameBoard.currentGem = null
-            isProcessingMatches = true
-            return true
-        }
-        return false
-    }
+        for (i in gems.indices) {
+            for (j in i + 1 until gems.size) {
+                val gem1 = gems[i]
+                val gem2 = gems[j]
 
-    // Check if placement is valid
-    private fun isValidPlacement(gridX: Int, gridY: Int): Boolean {
-        if (gridX !in 0 until GameBoard.GRID_WIDTH ||
-            gridY !in 0 until GameBoard.GRID_HEIGHT) {
-            return false
-        }
+                // Skip if either gem is already merged
+                if (gem1 in mergedGems || gem2 in mergedGems) continue
 
-        if (gameBoard.grid[gridY][gridX] != null) {
-            return false
-        }
-
-        return gridY == GameBoard.GRID_HEIGHT - 1 ||
-            gameBoard.grid[gridY + 1][gridX] != null
-    }
-
-    // Process matches in the grid
-    private fun processMatches() {
-        val matches = findMatches()
-        if (matches.isNotEmpty()) {
-            handleMatches(matches)
-            applyGravity()
-        }
-    }
-
-    // Find all matches in the grid
-    private fun findMatches(): List<List<Position>> {
-        val matches = mutableListOf<List<Position>>()
-
-        // Check horizontal matches
-        for (y in 0 until GameBoard.GRID_HEIGHT) {
-            var currentMatch = mutableListOf<Position>()
-            var currentTier = -1
-
-            for (x in 0 until GameBoard.GRID_WIDTH) {
-                val gem = gameBoard.grid[y][x]
-
-                if (gem != null && gem.tier == currentTier) {
-                    currentMatch.add(Position(x, y))
-                } else {
-                    if (currentMatch.size >= 3) {
-                        matches.add(currentMatch.toList())
-                    }
-                    currentMatch = mutableListOf()
-                    if (gem != null) {
-                        currentMatch.add(Position(x, y))
-                        currentTier = gem.tier
-                    }
+                // Check if gems are close enough and of the same tier
+                if (areGemsCloseEnough(gem1, gem2) && gem1.tier == gem2.tier) {
+                    handleMerge(gem1, gem2)
+                    mergedGems.add(gem1)
+                    mergedGems.add(gem2)
                 }
             }
-            if (currentMatch.size >= 3) {
-                matches.add(currentMatch)
-            }
-        }
-
-        // Check vertical matches
-        for (x in 0 until GameBoard.GRID_WIDTH) {
-            var currentMatch = mutableListOf<Position>()
-            var currentTier = -1
-
-            for (y in 0 until GameBoard.GRID_HEIGHT) {
-                val gem = gameBoard.grid[y][x]
-
-                if (gem != null && gem.tier == currentTier) {
-                    currentMatch.add(Position(x, y))
-                } else {
-                    if (currentMatch.size >= 3) {
-                        matches.add(currentMatch.toList())
-                    }
-                    currentMatch = mutableListOf()
-                    if (gem != null) {
-                        currentMatch.add(Position(x, y))
-                        currentTier = gem.tier
-                    }
-                }
-            }
-            if (currentMatch.size >= 3) {
-                matches.add(currentMatch)
-            }
-        }
-
-        return matches
-    }
-
-    // Handle matches (upgrade or remove gems)
-    private fun handleMatches(matches: List<List<Position>>) {
-        matches.forEach { match ->
-            val firstGem = gameBoard.grid[match[0].y][match[0].x]
-            val tier = firstGem?.tier ?: return@forEach
-
-            if (tier == 1) {
-                // Upgrade to tier 2
-                val centerPos = match[match.size / 2]
-                val (screenX, screenY) = gameBoard.gridToScreenCoordinates(centerPos.x, centerPos.y)
-
-                // Remove matched gems
-                match.forEach { pos ->
-                    gameBoard.grid[pos.y][pos.x]?.let { gem ->
-                        gameObjects.removeGem(gem) // Remove from container
-                    }
-                    gameBoard.grid[pos.y][pos.x] = null
-                }
-
-                // Create upgraded gem with new UID
-                val upgradedGem = Gem(
-                    uid = Gem.generateUid(),
-                    x = screenX,
-                    y = screenY,
-                    tier = 2
-                )
-                gameBoard.grid[centerPos.y][centerPos.x] = upgradedGem
-                gameObjects.addGem(upgradedGem) // Add to container
-            } else {
-                // Remove tier 2 gems and update score
-                match.forEach { pos ->
-                    gameBoard.grid[pos.y][pos.x]?.let { gem ->
-                        gameObjects.removeGem(gem) // Remove from container
-                    }
-                    gameBoard.grid[pos.y][pos.x] = null
-                }
-                gameBoard.score += match.size
-            }
         }
     }
 
-    // Apply gravity to make gems fall
-    private fun applyGravity() {
-        for (x in 0 until GameBoard.GRID_WIDTH) {
-            var bottomY = GameBoard.GRID_HEIGHT - 1
-            for (y in GameBoard.GRID_HEIGHT - 1 downTo 0) {
-                val gem = gameBoard.grid[y][x]
-                if (gem != null) {
-                    if (y != bottomY) {
-                        // Move gem to new position
-                        val (screenX, screenY) = gameBoard.gridToScreenCoordinates(x, bottomY)
-                        gem.moveTo(screenX, screenY)
+    // Calculate distance between gems
+    private fun areGemsCloseEnough(gem1: Gem, gem2: Gem): Boolean {
+        val dx = gem1.x - gem2.x
+        val dy = gem1.y - gem2.y
+        val distance = sqrt(dx * dx + dy * dy)
+        return distance <= MERGE_DISTANCE
+    }
 
-                        // Update grid
-                        gameBoard.grid[bottomY][x] = gem
-                        gameBoard.grid[y][x] = null
-                    }
-                    bottomY--
-                }
-            }
+    // Handle the merging of two gems
+    private fun handleMerge(gem1: Gem, gem2: Gem) {
+        // Calculate center position between the two gems
+        val centerX = (gem1.x + gem2.x) / 2
+        val centerY = (gem1.y + gem2.y) / 2
+
+        // Remove both gems
+        gameObjects.removeGem(gem1)
+        gameObjects.removeGem(gem2)
+
+        if (gem1.tier == 1) {
+            // Create new tier 2 gem at center position
+            val upgradedGem = Gem(
+                uid = Gem.generateUid(),
+                x = centerX,
+                y = centerY,
+                tier = 2
+            )
+            gameObjects.addGem(upgradedGem)
+        } else {
+            // If merging tier 2 gems, increase score
+            gameBoard.score += 2
         }
     }
 
     // Change game orientation
     fun changeOrientation(newOrientation: Orientation) {
         currentOrientation = newOrientation
-        // Recalculate screen layout based on new orientation
         gameBoard.calculateScreenLayout(gameBoard.screenWidth, gameBoard.screenHeight)
     }
 
-    // Getters for game state
+    // Getters
     fun getGameBoard() = gameBoard
+    fun getGameObjects() = gameObjects
     fun getCurrentOrientation() = currentOrientation
     fun getScore() = gameBoard.score
 }

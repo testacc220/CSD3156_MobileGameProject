@@ -3,6 +3,7 @@ package com.testacc220.csd3156_mobilegameproject
 import PhysicsEngine
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.math.Vector2
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.assets.disposeSafely
@@ -13,129 +14,77 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.InputAdapter
 
 
 class GameScene(private val game: MainKt, private val assetManager: AssetManager) : KtxScreen {
-    // Add gameObjects instance
-    private val gameObjects = GameObjects()
-
-    // Background texture
+    private val gameState = GameState()
     private var background: Texture? = null
-
-    // Skin and UI components
     private lateinit var skin: Skin
     private val stage: Stage = Stage(ScreenViewport())
     private val table: Table = Table()
     private lateinit var gameLabel: Label
+    private var physicsEngine: PhysicsEngine = PhysicsEngine()
 
-    // Add game grid constants
-    companion object {
-        const val GRID_WIDTH = 6
-        const val GRID_HEIGHT = 8
-        const val GEM_SIZE = 64f
-        const val SCREEN_PADDING = 16f
-    }
-
-    // Add game state properties
-    var grid: Array<Array<Gem?>> = Array(GRID_HEIGHT) { Array(GRID_WIDTH) { null } }
-    var currentGem: Gem? = null
-    var score: Int = 0
-    var isGameOver: Boolean = false
-
-    // Screen dimensions and scaling
-    var screenWidth: Float = 0f
-    var screenHeight: Float = 0f
-    var gridOffsetX: Float = 0f
-    var gridOffsetY: Float = 0f
-    var gemScale: Float = 1f
-
-    var physicsEngine : PhysicsEngine = PhysicsEngine()
+    // Input handling
+    private var isDragging = false
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
 
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
         physicsEngine.init()
-        try {
-            skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
-        } catch (e: Exception) {
-            Gdx.app.error("GameScene", "Failed to load skin.", e)
-            return
-        }
 
         try {
+            skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
             background = assetManager.get("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
         } catch (e: Exception) {
-            Gdx.app.error("GameScene", "Failed to load background texture.", e)
+            Gdx.app.error("GameScene", "Failed to load assets.", e)
+            return
         }
 
         // Initialize UI components
         gameLabel = Label("Game Started!", skin)
-
-        // Set up the stage and table
         table.setFillParent(true)
         table.add(gameLabel)
         stage.addActor(table)
 
-        // Set input processor
-        Gdx.input.inputProcessor = stage
+        // Set up input handling
+        Gdx.input.inputProcessor = object : InputAdapter() {
+            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
+                lastTouchX = worldCoords.x
+                lastTouchY = worldCoords.y
 
-        // Initialize game screen layout
-        calculateScreenLayout(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-    }
-
-    fun calculateScreenLayout(screenWidth: Float, screenHeight: Float) {
-        this.screenWidth = screenWidth
-        this.screenHeight = screenHeight
-
-        // Calculate grid offset to center it on screen
-        gridOffsetX = (screenWidth - (GRID_WIDTH * GEM_SIZE)) / 2
-        gridOffsetY = SCREEN_PADDING
-
-        // Calculate gem scaling if needed
-        val maxGridWidth = screenWidth - (2 * SCREEN_PADDING)
-        val maxGridHeight = screenHeight - (2 * SCREEN_PADDING)
-        val scaleX = maxGridWidth / (GRID_WIDTH * GEM_SIZE)
-        val scaleY = maxGridHeight / (GRID_HEIGHT * GEM_SIZE)
-        gemScale = minOf(scaleX, scaleY, 1f)
-    }
-
-    fun screenToGridCoordinates(screenX: Float, screenY: Float): Pair<Int, Int>? {
-        val gridX = ((screenX - gridOffsetX) / (GEM_SIZE * gemScale)).toInt()
-        val gridY = ((screenY - gridOffsetY) / (GEM_SIZE * gemScale)).toInt()
-
-        return if (gridX in 0 until GRID_WIDTH && gridY in 0 until GRID_HEIGHT) {
-            Pair(gridX, gridY)
-        } else {
-            null
-        }
-    }
-
-    fun gridToScreenCoordinates(gridX: Int, gridY: Int): Pair<Float, Float> {
-        val screenX = gridOffsetX + (gridX * GEM_SIZE * gemScale)
-        val screenY = gridOffsetY + (gridY * GEM_SIZE * gemScale)
-        return Pair(screenX, screenY)
-    }
-
-    fun updateGame(deltaTime: Float) {
-        gameObjects.update(deltaTime)
-        // Keep your existing update code for grid
-        for (y in 0 until GRID_HEIGHT) {
-            for (x in 0 until GRID_WIDTH) {
-                grid[y][x]?.update(deltaTime)
-            }
-        }
-        currentGem?.update(deltaTime)
-        physicsEngine.update(deltaTime)
-    }
-
-    fun isGridStable(): Boolean {
-        for (y in 0 until GRID_HEIGHT) {
-            for (x in 0 until GRID_WIDTH) {
-                if (grid[y][x]?.isMoving == true) {
-                    return false
+                // Check if touch is in play area
+                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
+                    isDragging = true
+                    return true
                 }
+                return false
+            }
+
+            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+                if (isDragging) {
+                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
+                    val currentGem = gameState.getGameBoard().currentGem
+
+                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
+                        currentGem.moveTo(worldCoords.x, worldCoords.y)
+                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
+                    }
+                }
+                return true
+            }
+
+            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+                isDragging = false
+                return true
             }
         }
-        return currentGem?.isMoving != true
+
+        // Initialize game state
+        gameState.initialize(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     }
 
     override fun render(delta: Float) {
@@ -144,31 +93,36 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
         val viewportWidth = stage.viewport.worldWidth
         val viewportHeight = stage.viewport.worldHeight
 
-        updateGame(delta)
+        // Update game state and physics
+        gameState.update(delta)
+        physicsEngine.update(delta)
 
-        game.batch.use {
-            it.draw(background, 0f, 0f, viewportWidth, viewportHeight)
-            // Draw all active gems
-            gameObjects.getActiveGems().forEach { gem ->
-                // Draw gem here (once you add texture rendering)
+        // Render game
+        game.batch.use { batch ->
+            // Draw background
+            background?.let { bg ->
+                batch.draw(bg, 0f, 0f, viewportWidth, viewportHeight)
+            }
+
+            // Draw all gems through gameState
+            gameState.getGameObjects().getActiveGems().forEach { gem ->
+                // Draw gem texture here once we have them
+                // For now, we could draw a colored rectangle or circle
             }
         }
 
+        // Update UI
+        gameLabel.setText("Score: ${gameState.getScore()}")
         stage.act(delta)
         stage.draw()
     }
 
     override fun resize(width: Int, height: Int) {
         stage.viewport.update(width, height, true)
-        calculateScreenLayout(width.toFloat(), height.toFloat())
-    }
-
-    override fun hide() {
-        // Called when this screen is no longer the current screen
+        gameState.initialize(width.toFloat(), height.toFloat())
     }
 
     override fun dispose() {
-        // Dispose of the stage and UI components
         stage.disposeSafely()
     }
 }
