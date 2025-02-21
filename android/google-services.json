@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "255459291554",
+    "firebase_url": "https://gemsmash-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "gemsmash",
+    "storage_bucket": "gemsmash.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255459291554:android:7ed39d3efaab5ae49d02fb",
+        "android_client_info": {
+          "package_name": "com.testacc220.csd3156_mobilegameproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrAbciLYbo1gnTAdqFN23fj7zbUc_a11g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

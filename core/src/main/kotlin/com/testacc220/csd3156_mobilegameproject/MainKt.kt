@@ -19,6 +19,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 import ktx.assets.disposeSafely
+//import com.google.firebase.firestore.FirebaseFirestore;
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -64,6 +65,7 @@ class MainKt : Game() {
             Gdx.app.error("MainKt", "Asset loading incomplete.")
         }
 
+        //val db = FirebaseFire.firestore
         // Transition directly to GameScene
         setScreen(GameScene(this, assetManager))
     }
