@@ -1,7 +1,8 @@
-package com.testacc220.csd3156_mobilegameproject.Model
+package com.testacc220.csd3156_mobilegameproject
 
 class GameState {
     private val gameBoard = GameBoard()
+    private val gameObjects = GameObjects()
     private var isProcessingMatches = false
 
     enum class Orientation {
@@ -36,11 +37,14 @@ class GameState {
     private fun spawnGem() {
         val randomX = (0 until GameBoard.GRID_WIDTH).random()
         val (screenX, screenY) = gameBoard.gridToScreenCoordinates(randomX, 0)
-        gameBoard.currentGem = Gem(
+        val newGem = Gem(
+            uid = Gem.generateUid(),
             x = screenX,
-            y = screenY - GameBoard.GEM_SIZE, // Start above the grid
+            y = screenY - GameBoard.GEM_SIZE,
             tier = 1
         )
+        gameBoard.currentGem = newGem
+        gameObjects.addGem(newGem) // Add to container
     }
 
     // Try to place the current gem at the specified grid position
@@ -154,18 +158,27 @@ class GameState {
 
                 // Remove matched gems
                 match.forEach { pos ->
+                    gameBoard.grid[pos.y][pos.x]?.let { gem ->
+                        gameObjects.removeGem(gem) // Remove from container
+                    }
                     gameBoard.grid[pos.y][pos.x] = null
                 }
 
-                // Create upgraded gem
-                gameBoard.grid[centerPos.y][centerPos.x] = Gem(
+                // Create upgraded gem with new UID
+                val upgradedGem = Gem(
+                    uid = Gem.generateUid(),
                     x = screenX,
                     y = screenY,
                     tier = 2
                 )
+                gameBoard.grid[centerPos.y][centerPos.x] = upgradedGem
+                gameObjects.addGem(upgradedGem) // Add to container
             } else {
                 // Remove tier 2 gems and update score
                 match.forEach { pos ->
+                    gameBoard.grid[pos.y][pos.x]?.let { gem ->
+                        gameObjects.removeGem(gem) // Remove from container
+                    }
                     gameBoard.grid[pos.y][pos.x] = null
                 }
                 gameBoard.score += match.size

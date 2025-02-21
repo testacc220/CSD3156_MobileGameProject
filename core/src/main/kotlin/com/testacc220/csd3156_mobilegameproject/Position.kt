@@ -1,4 +1,4 @@
-package com.testacc220.csd3156_mobilegameproject.Model
+package com.testacc220.csd3156_mobilegameproject
 
 data class Position(
     val x: Int,
