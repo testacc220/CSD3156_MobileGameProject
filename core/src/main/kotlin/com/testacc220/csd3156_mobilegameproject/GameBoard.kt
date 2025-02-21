@@ -1,6 +1,7 @@
-package com.testacc220.csd3156_mobilegameproject.Model
+package com.testacc220.csd3156_mobilegameproject
 
 class GameBoard {
+    private val gameObjects = GameObjects() // Add if you need direct access
     companion object {
         const val GRID_WIDTH = 6
         const val GRID_HEIGHT = 8
@@ -55,7 +56,7 @@ class GameBoard {
     }
 
     fun update(deltaTime: Float) {
-        // Update all gems
+        gameObjects.update(deltaTime)
         for (y in 0 until GRID_HEIGHT) {
             for (x in 0 until GRID_WIDTH) {
                 grid[y][x]?.update(deltaTime)

@@ -2,34 +2,22 @@ package com.testacc220.csd3156_mobilegameproject
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.utils.GdxRuntimeException
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.assets.disposeSafely
 import ktx.graphics.use
-import com.badlogic.gdx.Game
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.assets.loaders.FileHandleResolver
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.audio.Music
-import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
-import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.ScreenViewport
-import com.badlogic.gdx.graphics.GL20
-import ktx.app.clearScreen
-import ktx.assets.disposeSafely
-import ktx.graphics.use
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.testacc220.csd3156_mobilegameproject.Model.Gem
 
 
 class GameScene(private val game: MainKt, private val assetManager: AssetManager) : KtxScreen {
+    // Add gameObjects instance
+    private val gameObjects = GameObjects()
+
     // Background texture
     private var background: Texture? = null
 
@@ -125,7 +113,8 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
     }
 
     fun updateGame(deltaTime: Float) {
-        // Update all gems
+        gameObjects.update(deltaTime)
+        // Keep your existing update code for grid
         for (y in 0 until GRID_HEIGHT) {
             for (x in 0 until GRID_WIDTH) {
                 grid[y][x]?.update(deltaTime)
@@ -151,16 +140,16 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
         val viewportWidth = stage.viewport.worldWidth
         val viewportHeight = stage.viewport.worldHeight
 
-        // Update game state
         updateGame(delta)
 
-        // Draw background
         game.batch.use {
             it.draw(background, 0f, 0f, viewportWidth, viewportHeight)
-            // Add gem drawing here
+            // Draw all active gems
+            gameObjects.getActiveGems().forEach { gem ->
+                // Draw gem here (once you add texture rendering)
+            }
         }
 
-        // Update and draw UI
         stage.act(delta)
         stage.draw()
     }
