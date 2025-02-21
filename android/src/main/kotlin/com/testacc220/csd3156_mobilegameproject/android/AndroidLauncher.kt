@@ -8,6 +8,7 @@ import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
 import com.google.firebase.FirebaseApp
 import com.testacc220.csd3156_mobilegameproject.MainKt
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 
 import javax.net.ssl.SSLContext
 
@@ -35,21 +36,36 @@ class AndroidLauncher : AndroidApplication() {
 fun testFirestore() {
     Log.d("sdsds", "DocumentSnapshot entered")
     val db = FirebaseFirestore.getInstance()
-    Log.d("sdsds", "instance added ok")
-    val testData = hashMapOf(
-        "highscore" to 24,
-        "password" to "ricky",
-        "username" to "xiaoming",
-    )
-    Log.d("sdsds", "hashmap added ok")
+    val usrName = "zzz"
+//    Log.d("sdsds", "instance added ok")
+//    val testData = hashMapOf(
+//        "highscore" to 24,
+//        "password" to "ricky",
+//        "username" to "xiaoming",
+//    )
+//    Log.d("sdsds", "hashmap added ok")
+//
+//    db.collection("PlayerData")
+//        .add(testData)
+//        .addOnSuccessListener {
+//            Log.d("sdsds", "DocumentSnapshot added ok")
+//        }
+//        .addOnFailureListener {
+//            Log.d("sdsds", "DocumentSnapshot failed ok")
+//        }
 
     db.collection("PlayerData")
-        .add(testData)
-        .addOnSuccessListener { documentReference ->
-            Log.d("sdsds", "DocumentSnapshot added ok")
-        }
-        .addOnFailureListener { e ->
-            Log.d("sdsds", "DocumentSnapshot failed ok")
+//        .orderBy("highscore",
+//            Query.Direction.DESCENDING)
+        .whereEqualTo("username", usrName)
+        .get()
+        .addOnSuccessListener { querySnap -> val hs = querySnap.documents.mapNotNull {
+                                    document ->
+                                        val username = document.getString("username")
+                                        val hs = document.getLong("highscore")?.toInt()
+                                        if(username != null && hs != null)
+                                            Log.w("Hello", "managed to read value: $hs" )
+            }
         }
 }
 
