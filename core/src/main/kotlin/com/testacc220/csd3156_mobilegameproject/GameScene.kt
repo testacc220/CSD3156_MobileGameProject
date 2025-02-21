@@ -1,5 +1,6 @@
 package com.testacc220.csd3156_mobilegameproject
 
+import PhysicsEngine
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.utils.GdxRuntimeException
@@ -59,6 +60,8 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
     var gridOffsetX: Float = 0f
     var gridOffsetY: Float = 0f
     var gemScale: Float = 1f
+
+    var physicsEngine : PhysicsEngine = PhysicsEngine()
 
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
@@ -132,6 +135,7 @@ class GameScene(private val game: MainKt, private val assetManager: AssetManager
             }
         }
         currentGem?.update(deltaTime)
+        physicsEngine.update(deltaTime)
     }
 
     fun isGridStable(): Boolean {
