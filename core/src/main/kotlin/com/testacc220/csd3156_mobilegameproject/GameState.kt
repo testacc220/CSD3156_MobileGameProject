@@ -46,7 +46,7 @@ class GameState {
         }
 
         // Spawn a new gem every 1 second.
-        if (spawnTimer >= 1f && !isProcessingMerges) {
+        if (spawnTimer >= 2f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
