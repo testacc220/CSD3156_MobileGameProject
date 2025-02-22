@@ -17,6 +17,8 @@ import javax.net.ssl.SSLContext
 
 /** Launches the Android application. */
 class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
+    public var usrName = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SSLContext.getInstance("TLSv1.2").apply {
@@ -35,7 +37,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
     override fun readUsrDatabase(onResult: (Int) -> Unit) {
         val db = FirebaseFirestore.getInstance()
-        val usrName = "PukiMan2"
+        usrName = "PukiMan2"
 
         db.collection("PlayerData")
             .document(usrName)
@@ -48,6 +50,33 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             .addOnFailureListener { exception ->
                 Log.d("Hello", "get failed with ", exception)
                 onResult(0)  // Pass 0 if failed
+            }
+    }
+
+    override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        // retrieve top 10 scores
+        db.collection("PlayerData")
+            .orderBy("highscore", Query.Direction.DESCENDING)
+            .limit(10)
+            .get()
+            .addOnSuccessListener { querySnap ->
+                val retHs = querySnap.documents.mapNotNull { document ->
+                    val username = document.getString("username")
+                    val hs = document.getLong("highscore")?.toInt()
+                    if (username != null && hs != null) {
+                        Log.w("Hello", "managed to read value: $username w score $hs " )
+                        Pair(username, hs)
+                    } else {
+                        // skip invalid, req for mapNotNull
+                        null
+                    }
+                }
+                onResult(retHs) // Return the top scores via the callback
+            }
+            .addOnFailureListener {
+                onResult(emptyList()) // Return empty list on failure
             }
     }
 }

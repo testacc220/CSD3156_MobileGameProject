@@ -1,75 +1,87 @@
+
 package com.testacc220.csd3156_mobilegameproject
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.*
+import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.viewport.ScreenViewport
-import ktx.app.KtxScreen
-import ktx.scene2d.*
 import com.badlogic.gdx.graphics.Color
+import ktx.app.KtxScreen
 
 class LoginScreen(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
-    private val stage = Stage(ScreenViewport())
-    private lateinit var skin: Skin
-    private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
+    private val stage: Stage = Stage(ScreenViewport())
+    private lateinit var usernameField: TextField
+    private lateinit var loginButton: TextButton
+    private lateinit var table: Table
+    private val skin = Skin()
+    private val font = BitmapFont()
 
     override fun show() {
         Gdx.input.inputProcessor = stage
 
-        // Load skin from asset manager
-        assetManager.finishLoading()
-        skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
+
+        // Scale the font (increase or decrease this value to change font size)
+        font.data.setScale(2f)  // 2f means 2x the original size
+
+        // Create custom skin styles
+        val textFieldStyle = TextField.TextFieldStyle().apply {
+            font = this@LoginScreen.font
+            fontColor = Color.WHITE
+            background = null
+            cursor = null
+            selection = null
+        }
+
+        val textButtonStyle = TextButton.TextButtonStyle().apply {
+            font = this@LoginScreen.font
+            fontColor = Color.WHITE
+            downFontColor = Color.LIGHT_GRAY
+        }
+
+        val labelStyle = Label.LabelStyle(font, Color.WHITE)
 
         // Create UI elements
-        val titleLabel = Label("Login", skin, "default").apply {
-            setFontScale(2f)
-            color = Color.WHITE
+        usernameField = TextField("", textFieldStyle).apply {
+            messageText = "Enter username"
         }
 
-        val usernameField = TextField("", skin).apply { messageText = "Username" }
-        val passwordField = TextField("", skin).apply {
-            messageText = "Password"
-            isPasswordMode = true
-//            passwordCharacter = '*'
+        loginButton = TextButton("Login", textButtonStyle).apply {
+            addListener(object : ChangeListener() {
+                override fun changed(event: ChangeEvent?, actor: Actor?) {
+                    handleLogin()
+                }
+            })
         }
-        val loginButton = TextButton("Login", skin)
-        val errorLabel = Label("", skin).apply { color = Color.RED }
 
-        // Layout using Table
-        val table = Table().apply {
+        // Create and set up table
+        table = Table().apply {
             setFillParent(true)
-            top().padTop(100f)
-            add(titleLabel).padBottom(30f).row()
-            add(usernameField).width(300f).padBottom(15f).row()
-            add(passwordField).width(300f).padBottom(15f).row()
-            add(loginButton).width(200f).padTop(10f).row()
-            add(errorLabel).padTop(10f)
+            defaults().pad(20f)
+
+            add(Label("Login", labelStyle)).padBottom(40f).row()  // Increased bottom padding
+            add(usernameField).width(600f).height(80f).row()  // Increased width and height
+            add(loginButton).width(600f).height(80f).row()  // Increased width and height
         }
+
         stage.addActor(table)
+    }
 
-        // Handle login button click
-        loginButton.addListener { event ->
-            if (event is com.badlogic.gdx.scenes.scene2d.utils.ChangeListener.ChangeEvent) {
-                val username = usernameField.text
-                val password = passwordField.text
+    private fun handleLogin() {
+        val username = usernameField.text
+//        androidLauncherInterface.setUserName(username)
 
-                // Call Android interface for authentication
-//                androidLauncherInterface.authenticateUser(username, password) { success ->
-//                    Gdx.app.postRunnable {
-//                        if (success) {
-//                            game.setScreen<GameScene>() // Switch to game screen
-//                        } else {
-//                            errorLabel.setText("Invalid credentials!")
-//                        }
-//                    }
-//                }
-            }
-            false
-        }
+        // Add your login logic here
+        game.setScreen(GameScene(game, androidLauncherInterface))
     }
 
     override fun render(delta: Float) {
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+
         stage.act(delta)
         stage.draw()
     }
@@ -80,5 +92,8 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
 
     override fun dispose() {
         stage.dispose()
+        skin.dispose()
+        font.dispose()
     }
 }
+
