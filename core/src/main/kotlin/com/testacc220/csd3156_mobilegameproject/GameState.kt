@@ -1,4 +1,5 @@
 package com.testacc220.csd3156_mobilegameproject
+import PhysicsEngine
 import com.badlogic.gdx.math.Vector2
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -26,13 +27,16 @@ class GameState {
     }
 
     // Update game state
-    fun update(deltaTime: Float) {
+    fun update(deltaTime: Float, physicsEngine: PhysicsEngine) {
         spawnTimer += deltaTime
 
         // Apply gravity to all gems.
         gameObjects.getActiveGems().forEach { gem ->
             if (!gem.isMoving) {
-                applyGravity(gem, deltaTime)
+                //applyGravity(gem, deltaTime)
+                val pos = physicsEngine.getGemPosition(gem.uid)
+                gem.x = pos.x
+                gem.y = pos.y
             }
         }
 
@@ -45,7 +49,7 @@ class GameState {
 
         // Spawn a new gem every 1 second.
         if (spawnTimer >= 1f && !isProcessingMerges) {
-            spawnGem()
+            spawnGem(physicsEngine)
             spawnTimer = 0f
         }
     }
@@ -86,7 +90,7 @@ class GameState {
 
 
     // Spawn a new gem at the top of the screen
-    private fun spawnGem() {
+    private fun spawnGem(physicsEngine: PhysicsEngine) {
         // Random x position within play area bounds
         val minX = gameBoard.playAreaOffsetX + GameBoard.GEM_SIZE/2
         val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE/2
@@ -108,6 +112,8 @@ class GameState {
         )
         gameBoard.currentGem = newGem
         gameObjects.addGem(newGem)
+        physicsEngine.createGemBody(newGem.uid, newGem.x, newGem.y)
+        return
     }
 
     // Check for potential merges based on proximity

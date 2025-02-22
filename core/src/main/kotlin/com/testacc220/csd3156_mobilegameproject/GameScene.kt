@@ -59,7 +59,7 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
-        physicsEngine.init()
+
 
         enqueueAssets()
 
@@ -127,6 +127,7 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
         // Initialize game state
         gameState.initialize(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        physicsEngine.init(Gdx.graphics.width.toFloat())
     }
 
     override fun render(delta: Float) {
@@ -136,7 +137,7 @@ class GameScene(private val game: MainKt) : KtxScreen {
         val viewportHeight = stage.viewport.worldHeight
 
         // Update game state and physics
-        gameState.update(delta)
+        gameState.update(delta, physicsEngine)
         physicsEngine.update(delta)
 
         // Render background
