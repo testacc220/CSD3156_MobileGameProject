@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.InputAdapter
+import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import com.badlogic.gdx.assets.loaders.FileHandleResolver
 import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.files.FileHandle
@@ -70,6 +71,8 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
         assetManager.finishLoading()
 
+        //test sensor
+        SensorManager.logSensorData()
         try {
             skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
             background = assetManager.get("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
@@ -140,14 +143,36 @@ class GameScene(private val game: MainKt) : KtxScreen {
         val viewportWidth = stage.viewport.worldWidth
         val viewportHeight = stage.viewport.worldHeight
 
+        // Update rotation in SensorManager
+        SensorManager.updateRotation(delta)
+
         // Update game state and physics
         gameState.update(delta)
         physicsEngine.update(delta)
 
-        // Render background
+        // Render game with rotation
         game.batch.use { batch ->
+            // Draw background with rotation from SensorManager
             background?.let { bg ->
                 batch.draw(bg, 0f, 0f, viewportWidth, viewportHeight)
+//                batch.draw(
+//                    bg,
+//                    0f,  // X position
+//                    0f,  // Y position
+//                    viewportWidth / 2,  // Origin X (center of rotation)
+//                    viewportHeight / 2,  // Origin Y (center of rotation)
+//                    viewportWidth,  // Width
+//                    viewportHeight,  // Height
+//                    1f,  // Scale X
+//                    1f,  // Scale Y
+//                    SensorManager.rotation,  // Rotation angle from SensorManager
+//                    0,  // Source X
+//                    0,  // Source Y
+//                    bg.width,  // Source width
+//                    bg.height,  // Source height
+//                    false,  // Flip X
+//                    false   // Flip Y
+//                )
             }
         }
 

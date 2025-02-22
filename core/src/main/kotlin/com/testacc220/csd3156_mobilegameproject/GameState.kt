@@ -1,5 +1,7 @@
 package com.testacc220.csd3156_mobilegameproject
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector2
+import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import kotlin.math.abs
 import kotlin.math.sqrt
 
@@ -51,8 +53,16 @@ class GameState {
     }
 
     private fun applyGravity(gem: Gem, deltaTime: Float) {
-        // Proposed new y based solely on gravity.
-        val proposedY = gem.y - GRAVITY * deltaTime
+        val angleDegrees = SensorManager.rotation
+        Gdx.app.log("applyGravity", "angleDegrees: $angleDegrees")
+
+        val angleRadians = Math.toRadians(angleDegrees.toDouble()).toFloat()
+
+        val dx = GRAVITY * kotlin.math.sin(angleRadians) * deltaTime
+        val dy = -GRAVITY * kotlin.math.cos(angleRadians) * deltaTime
+
+        val proposedX = gem.x + dx
+        val proposedY = gem.y + dy
 
         // The landing y is at least the bottom of the play area.
         var landingY = gameBoard.playAreaOffsetY
@@ -80,6 +90,7 @@ class GameState {
             }
         } else {
             // Otherwise, let the gem fall normally.
+            gem.x = proposedX
             gem.y = proposedY
         }
     }
