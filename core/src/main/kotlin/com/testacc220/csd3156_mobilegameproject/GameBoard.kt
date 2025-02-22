@@ -5,7 +5,7 @@ class GameBoard {
     companion object {
         var PLAY_AREA_WIDTH = 0f // Dynamically calculated based on display resolution
         var PLAY_AREA_HEIGHT = 0f
-        const val GEM_SIZE = 64f
+        const val GEM_SIZE = 128f
         const val SCREEN_PADDING = 16f
     }
 
