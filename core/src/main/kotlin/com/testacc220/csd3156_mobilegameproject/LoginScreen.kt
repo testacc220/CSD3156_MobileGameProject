@@ -155,7 +155,7 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
             if(availBool) // username is free
             {
                 androidLauncherInterface.addUser(username, password)
-                game.setScreen(GameScene(game, androidLauncherInterface))
+                //game.setScreen(GameScene(game, androidLauncherInterface))
             }
             else // username is false
             {

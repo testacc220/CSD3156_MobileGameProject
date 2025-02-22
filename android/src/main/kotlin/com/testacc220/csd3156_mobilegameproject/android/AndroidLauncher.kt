@@ -29,13 +29,13 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }
         //addUserOld()
         // Initialize Firebase
-        FirebaseApp.initializeApp(this)
-//        testFirestore()
-//        readDatabase()
+
+//        //testFirestore()
+//        //readDatabase()
         initialize(MainKt(this), AndroidApplicationConfiguration().apply {
             useImmersiveMode = true // Recommended, but not required.
         })
-
+        FirebaseApp.initializeApp(this)
     }
 
     //public var usrName = ""
@@ -201,19 +201,36 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser")
         Log.d("hello", "adduser user is, $usrNameTmp")
         Log.d("hello", "adduser pw is, $passWrdTmp")
+
+        // Validate input
+        if (usrNameTmp.isNullOrEmpty() || passWrdTmp.isNullOrEmpty()) {
+            Log.e("hello", "Username or password is null or empty")
+            return
+        }
+
         val testData = hashMapOf(
             "password" to passWrdTmp,
-            "highscore" to "0"
+            "highscore" to "0",
+            "username" to usrNameTmp
+
         )
+        Log.d("hello", "adduser hash done")
         val db = FirebaseFirestore.getInstance()
-        db.collection("PlayerData").document("$usrNameTmp").set(testData)
-            //db.collection("PlayerData").add(testData)
+        if (db == null) {
+            Log.e("hello", "Firestore instance is null")
+            return
+
+        }
+        Log.d("hello", "adduser instance gotten")
+        db.collection("PlayerData").document(usrNameTmp).set(testData)
             .addOnSuccessListener {
                 Log.d("hello", "user entry added ok")
             }
-            .addOnFailureListener {
-                Log.d("hello", "user entry failed ok")
+            .addOnFailureListener { e ->
+                Log.e("hello", "Test document failed", e)
+                //Log.d("hello", "user entry failed ok")
             }
+        Log.d("hello", "adduser end func")
     }
 
 

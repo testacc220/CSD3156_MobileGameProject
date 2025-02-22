@@ -48,7 +48,7 @@ class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
         gameScene = GameScene(this, androidLauncher)
 
         // Transition directly to GameScene
-        setScreen(MainMenu(this,androidLauncher))
+        setScreen(LoginScreen(this,androidLauncher))
     }
 
     override fun dispose() {
