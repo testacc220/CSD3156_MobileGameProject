@@ -173,10 +173,16 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
                 batch.draw(textureToUse, gem.x, gem.y, gem.width, gem.height)
             }
         }
-        val testScore = androidLauncherInterface.readUsrDatabase()
+
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
-        gameLabel.setText("$testScore")
+
+        // Testing read from database haha
+//        androidLauncherInterface.readUsrDatabase { testScore ->
+//            Log.d("Hello", "Retrieved score: $testScore") // Debugging
+//            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
+//        }
+
         stage.act(delta)
         stage.draw()
     }

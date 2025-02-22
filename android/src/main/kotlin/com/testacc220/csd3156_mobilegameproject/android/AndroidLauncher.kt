@@ -33,33 +33,22 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
     }
 
-    val userhs = {0}
-
-    override fun readUsrDatabase() :Int{
-        //Log.d("sdsds", "DocumentSnapshot entered")
+    override fun readUsrDatabase(onResult: (Int) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val usrName = "PukiMan2"
-        var hs = 4
+
         db.collection("PlayerData")
-//        .orderBy("highscore",
-//            Query.Direction.DESCENDING)
-//        .whereEqualTo("username", usrName)
-//        .get()
             .document(usrName)
             .get()
             .addOnSuccessListener { document ->
-                if (document != null) {
-                    hs = document.getLong("highscore")?.toInt()?:0
-                    Log.d("Hello", "DocumentSnapshotTest data: $hs")
-                } else {
-                    Log.d("Hello", "No such document")
-                }
+                val hs = document.getLong("highscore")?.toInt() ?: 0
+                Log.d("Hello", "DocumentSnapshotTest data: $hs")
+                onResult(hs)  // ✅ Pass value back via callback
             }
             .addOnFailureListener { exception ->
                 Log.d("Hello", "get failed with ", exception)
+                onResult(0)  // Pass 0 if failed
             }
-        return hs
-        // [END get_document]
     }
 }
 
