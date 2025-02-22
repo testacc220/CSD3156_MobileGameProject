@@ -22,6 +22,9 @@ import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -81,6 +84,11 @@ class GameScene(private val game: MainKt) : KtxScreen {
             yellowGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_46.png", Texture::class.java)
             yellowStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png", Texture::class.java)
             yellowPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png", Texture::class.java)
+
+            redHeartTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_48.png", Texture::class.java)
+            redGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_46.png", Texture::class.java)
+            redStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_45.png", Texture::class.java)
+            redPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_29.png", Texture::class.java)
 
             tier1GemTile = assetManager.get("BackTile_15.png", Texture::class.java)
             tier2GemTile = assetManager.get("BackTile_01.png", Texture::class.java)
@@ -222,6 +230,11 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
+
+        if (gameState.getGameBoard().isGameOver) {
+            showGameOverUI()
+        }
+
         stage.act(delta)
         stage.draw()
     }
@@ -260,6 +273,40 @@ class GameScene(private val game: MainKt) : KtxScreen {
         stage.disposeSafely()
         assetManager.disposeSafely()
         shapeRenderer.dispose()
+    }
+
+    private fun showGameOverUI() {
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
+        labelStyle.font.data.setScale(7f)
+        val gameOverLabel = Label("GAME OVER", labelStyle)
+        gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
+
+        val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
+        val playAgainButton = TextButton("Play Again", buttonStyle)
+        playAgainButton.setSize(300f, 120f)
+        playAgainButton.setPosition(stage.width / 2 - 150, stage.height / 2 - 50)
+
+        playAgainButton.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                restartGame()
+            }
+        })
+
+        stage.addActor(gameOverLabel)
+        stage.addActor(playAgainButton)
+    }
+
+    private fun restartGame() {
+        gameState.resetGame()
+        stage.clear()  // Clear all UI elements including "Game Over" text
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+        labelStyle.font.data.setScale(7f)
+        gameLabel = Label("Score: 0", labelStyle)
+        table.setFillParent(true)
+        table.top().left().pad(20f)
+        table.add(gameLabel)
+        stage.addActor(table)
+        Gdx.app.log("GameScene", "Game Restarted!")
     }
 
     private fun enqueueAssets() {

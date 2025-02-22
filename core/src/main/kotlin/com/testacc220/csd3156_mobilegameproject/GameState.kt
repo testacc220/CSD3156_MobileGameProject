@@ -46,7 +46,7 @@ class GameState {
         }
 
         // Spawn a new gem every 1 second.
-        if (spawnTimer >= 1f && !isProcessingMerges) {
+        if (!gameBoard.isGameOver && spawnTimer >= 1f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
@@ -54,7 +54,7 @@ class GameState {
 
     private fun applyGravity(gem: Gem, deltaTime: Float) {
         val angleDegrees = SensorManager.rotation
-        Gdx.app.log("applyGravity", "angleDegrees: $angleDegrees")
+        // Gdx.app.log("applyGravity", "angleDegrees: $angleDegrees")
 
         val angleRadians = Math.toRadians(angleDegrees.toDouble()).toFloat()
 
@@ -88,6 +88,12 @@ class GameState {
             if (gameBoard.currentGem == gem) {
                 gameBoard.currentGem = null
             }
+
+            val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
+            if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
+                gameBoard.isGameOver = true
+                Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
+            }
         } else {
             // Otherwise, let the gem fall normally.
             gem.x = proposedX
@@ -108,14 +114,14 @@ class GameState {
             return
         }
 
-        val randomGemType = GemType.values().random()
+        val possibleTypes = GemType.values().filter { it != GemType.PENTAGON }
+        val randomGemType = possibleTypes.random()
 
         val newGem = Gem(
             uid = Gem.generateUid(),
             x = randomX,
             y = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT + GameBoard.GEM_SIZE,
-            GemType.HEART,
-            // randomGemType,
+            randomGemType,
             tier = 1
         )
         gameBoard.currentGem = newGem
@@ -149,15 +155,17 @@ class GameState {
     // Calculate distance between gems
     private fun areGemsCloseEnough(gem1: Gem, gem2: Gem): Boolean {
 
-        // A tolerance value that represents how “in line” two gems need to be for horizontal or vertical alignment.
-        val tolerance = GameBoard.GEM_SIZE * 0.5f   // 10% of gem size
-        val dynamicMergeDistance = GameBoard.GEM_SIZE * 1.0f  // 1 gem size
+        val verticalTolerance = GameBoard.GEM_SIZE
+        val horizontalMergeDistance = GameBoard.GEM_SIZE * 1.2f
+
+        val horizontalTolerance = GameBoard.GEM_SIZE
+        val verticalMergeDistance = GameBoard.GEM_SIZE
 
         val dx = kotlin.math.abs(gem1.x - gem2.x)
         val dy = kotlin.math.abs(gem1.y - gem2.y)
 
-        if (dy <= tolerance && dx <= dynamicMergeDistance) return true
-        if (dx <= tolerance && dy <= dynamicMergeDistance) return true
+        if (dy <= verticalTolerance && dx <= horizontalMergeDistance) return true
+        if (dx <= horizontalTolerance && dy <= verticalMergeDistance) return true
 
         return false
     }
@@ -224,6 +232,14 @@ class GameState {
             gemCol == col
         }
         return count >= maxRows
+    }
+
+    fun resetGame() {
+        gameBoard.isGameOver = false
+        gameBoard.score = 0
+        gameObjects.clearAllGems()
+        spawnTimer = 0f
+        Gdx.app.log("GameState", "Game Reset! All gems cleared.")
     }
 
     // Change game orientation
