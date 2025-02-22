@@ -28,15 +28,15 @@ class ListenerClass : ContactListener {
     }
 
     override fun endContact(contact: Contact) {
-        Gdx.app.log("Contact Listener", "End Contact")
+        //Gdx.app.log("Contact Listener", "End Contact")
     }
 
     override fun preSolve(contact: Contact?, oldManifold: Manifold?) {
-        Gdx.app.log("Contact Listener", "Pre Solve")
+        //Gdx.app.log("Contact Listener", "Pre Solve")
     }
 
     override fun postSolve(contact: Contact?, impulse: ContactImpulse?) {
-        Gdx.app.log("Contact Listener", "Post Solve")
+        //Gdx.app.log("Contact Listener", "Post Solve")
     }
 }
 
