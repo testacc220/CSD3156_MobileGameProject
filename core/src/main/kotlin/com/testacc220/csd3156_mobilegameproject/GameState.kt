@@ -1,15 +1,12 @@
 package com.testacc220.csd3156_mobilegameproject
 import com.badlogic.gdx.math.Vector2
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 class GameState {
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
     private var isProcessingMerges  = false
-
-    companion object {
-        const val MERGE_DISTANCE = 70f  // Distance threshold for merging gems
-    }
 
     enum class Orientation {
         VERTICAL,
@@ -18,6 +15,11 @@ class GameState {
 
     private var currentOrientation = Orientation.VERTICAL
 
+    // Gravity in pixels per second.
+    private val GRAVITY = 500f
+    // Timer to spawn gems every 1 second.
+    private var spawnTimer = 0f
+
     // Initialize game state
     fun initialize(screenWidth: Float, screenHeight: Float) {
         gameBoard.calculateScreenLayout(screenWidth, screenHeight)
@@ -25,6 +27,15 @@ class GameState {
 
     // Update game state
     fun update(deltaTime: Float) {
+        spawnTimer += deltaTime
+
+        // Apply gravity to all gems.
+        gameObjects.getActiveGems().forEach { gem ->
+            if (!gem.isMoving) {
+                applyGravity(gem, deltaTime)
+            }
+        }
+
         gameBoard.update(deltaTime)
 
         // If everything is stable, check for potential merges
@@ -32,11 +43,47 @@ class GameState {
             checkForMerges()
         }
 
-        // Spawn new gem if needed
-        if (gameBoard.currentGem == null && gameBoard.isStable() && !isProcessingMerges) {
+        // Spawn a new gem every 1 second.
+        if (spawnTimer >= 1f && !isProcessingMerges) {
             spawnGem()
+            spawnTimer = 0f
         }
     }
+
+    private fun applyGravity(gem: Gem, deltaTime: Float) {
+        // Proposed new y based solely on gravity.
+        val proposedY = gem.y - GRAVITY * deltaTime
+
+        // The landing y is at least the bottom of the play area.
+        var landingY = gameBoard.playAreaOffsetY
+
+        // Check for each landed (non-moving) gem that might be directly below.
+        gameObjects.getActiveGems().forEach { otherGem ->
+            if (otherGem !== gem && !otherGem.isMoving) {
+                // Check if the gems are horizontally overlapping.
+                if (abs(gem.x - otherGem.x) < GameBoard.GEM_SIZE * 0.9f) {
+                    // The candidate landing position is the top of the landed gem.
+                    val candidateY = otherGem.y + GameBoard.GEM_SIZE
+                    if (candidateY > landingY && candidateY <= gem.y) {
+                        landingY = candidateY
+                    }
+                }
+            }
+        }
+
+        // If the proposed y would be below or equal to the landing position, snap the gem to landingY.
+        if (proposedY <= landingY) {
+            gem.y = landingY
+            gem.isMoving = false
+            if (gameBoard.currentGem == gem) {
+                gameBoard.currentGem = null
+            }
+        } else {
+            // Otherwise, let the gem fall normally.
+            gem.y = proposedY
+        }
+    }
+
 
     // Spawn a new gem at the top of the screen
     private fun spawnGem() {
@@ -45,11 +92,18 @@ class GameState {
         val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE/2
         val randomX = minX + (maxX - minX) * Math.random().toFloat()
 
+        if (isColumnOverflowed(randomX)) {
+            gameBoard.isGameOver = true
+            return
+        }
+
+        val randomGemType = GemType.values().random()
+
         val newGem = Gem(
             uid = Gem.generateUid(),
             x = randomX,
             y = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT + GameBoard.GEM_SIZE,
-            GemType.HEART, // Hardcoded for now
+            randomGemType,
             tier = 1
         )
         gameBoard.currentGem = newGem
@@ -58,59 +112,106 @@ class GameState {
 
     // Check for potential merges based on proximity
     private fun checkForMerges() {
-        val gems = gameObjects.getActiveGems()
-        val mergedGems = mutableSetOf<Gem>()
+        if (isProcessingMerges) return
+        isProcessingMerges = true
 
-        for (i in gems.indices) {
-            for (j in i + 1 until gems.size) {
-                val gem1 = gems[i]
-                val gem2 = gems[j]
-
-                // Skip if either gem is already merged
-                if (gem1 in mergedGems || gem2 in mergedGems) continue
-
-                // Check if gems are close enough and of the same tier
-                if (areGemsCloseEnough(gem1, gem2) && gem1.tier == gem2.tier) {
-                    handleMerge(gem1, gem2)
-                    mergedGems.add(gem1)
-                    mergedGems.add(gem2)
+        var mergeOccurred: Boolean
+        do {
+            mergeOccurred = false
+            val gems = gameObjects.getActiveGems().toList()
+            for (gem in gems) {
+                // If gem is already removed by a previous merge, skip it.
+                if (!gameObjects.getActiveGems().contains(gem)) continue
+                val cluster = findClusterProximity(gem, gems)
+                if (cluster.size >= 3) {
+                    mergeOccurred = true
+                    performMerge(cluster)
+                    break // Restart scanning after a merge for chain reactions.
                 }
             }
-        }
+        } while (mergeOccurred)
+
+        isProcessingMerges = false
     }
 
     // Calculate distance between gems
     private fun areGemsCloseEnough(gem1: Gem, gem2: Gem): Boolean {
-        val dx = gem1.x - gem2.x
-        val dy = gem1.y - gem2.y
-        val distance = sqrt(dx * dx + dy * dy)
-        return distance <= MERGE_DISTANCE
+
+        // A tolerance value that represents how “in line” two gems need to be for horizontal or vertical alignment.
+        val tolerance = GameBoard.GEM_SIZE * 0.5f   // 10% of gem size
+        val dynamicMergeDistance = GameBoard.GEM_SIZE * 1.0f  // 1 gem size
+
+        val dx = kotlin.math.abs(gem1.x - gem2.x)
+        val dy = kotlin.math.abs(gem1.y - gem2.y)
+
+        if (dy <= tolerance && dx <= dynamicMergeDistance) return true
+        if (dx <= tolerance && dy <= dynamicMergeDistance) return true
+
+        return false
     }
 
-    // Handle the merging of two gems
-    private fun handleMerge(gem1: Gem, gem2: Gem) {
-        // Calculate center position between the two gems
-        val centerX = (gem1.x + gem2.x) / 2
-        val centerY = (gem1.y + gem2.y) / 2
+    private fun findClusterProximity(startGem: Gem, gems: List<Gem>): Set<Gem> {
+        val cluster = mutableSetOf<Gem>()
+        val queue = ArrayDeque<Gem>()
+        queue.add(startGem)
+        cluster.add(startGem)
 
-        // Remove both gems
-        gameObjects.removeGem(gem1)
-        gameObjects.removeGem(gem2)
+        val targetTier = startGem.tier
+        val targetType = startGem.type
 
-        if (gem1.tier == 1) {
-            // Create new tier 2 gem at center position
+        while (queue.isNotEmpty()) {
+            val currentGem = queue.removeFirst()
+            // Check every other gem (proximity-based)
+            for (otherGem in gems) {
+                if (otherGem !in cluster
+                    && otherGem.tier == targetTier
+                    && otherGem.type == targetType
+                    && areGemsCloseEnough(currentGem, otherGem)
+                ) {
+                    cluster.add(otherGem)
+                    queue.add(otherGem)
+                }
+            }
+        }
+        return cluster
+    }
+
+    private fun performMerge(cluster: Set<Gem>) {
+        // Compute the average (center) position of the cluster.
+        val (sumX, sumY) = cluster.fold(Pair(0f, 0f)) { acc, gem ->
+            Pair(acc.first + gem.x, acc.second + gem.y)
+        }
+        val centerX = sumX / cluster.size
+        val centerY = sumY / cluster.size
+
+        // Remove all gems in the cluster.
+        cluster.forEach { gameObjects.removeGem(it) }
+        gameObjects.update(0f)
+
+        // Upgrade tier by one
+        val newTier = cluster.first().tier + 1
+        if (newTier <= 2) {
             val upgradedGem = Gem(
                 uid = Gem.generateUid(),
                 x = centerX,
                 y = centerY,
-                GemType.HEART, // Hardcoded for now
-                tier = 2
+                type = cluster.first().type,
+                tier = newTier
             )
             gameObjects.addGem(upgradedGem)
         } else {
-            // If merging tier 2 gems, increase score
-            gameBoard.score += 2
+            gameBoard.score += 2 * cluster.size
         }
+    }
+
+    private fun isColumnOverflowed(spawnX: Float): Boolean {
+        val col = ((spawnX - gameBoard.playAreaOffsetX) / GameBoard.GEM_SIZE).toInt()
+        val maxRows = (GameBoard.PLAY_AREA_HEIGHT / GameBoard.GEM_SIZE).toInt()
+        val count = gameObjects.getActiveGems().count {
+            val gemCol = ((it.x - gameBoard.playAreaOffsetX) / GameBoard.GEM_SIZE).toInt()
+            gemCol == col
+        }
+        return count >= maxRows
     }
 
     // Change game orientation
