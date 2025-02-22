@@ -18,6 +18,8 @@ import javax.net.ssl.SSLContext
 
 /** Launches the Android application. */
 class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
+    public var usrName = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -217,6 +219,32 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
 
 
+    override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+
+        // retrieve top 10 scores
+        db.collection("PlayerData")
+            .orderBy("highscore", Query.Direction.DESCENDING)
+            .limit(10)
+            .get()
+            .addOnSuccessListener { querySnap ->
+                val retHs = querySnap.documents.mapNotNull { document ->
+                    val username = document.getString("username")
+                    val hs = document.getLong("highscore")?.toInt()
+                    if (username != null && hs != null) {
+                        Log.w("Hello", "managed to read value: $username w score $hs " )
+                        Pair(username, hs)
+                    } else {
+                        // skip invalid, req for mapNotNull
+                        null
+                    }
+                }
+                onResult(retHs) // Return the top scores via the callback
+            }
+            .addOnFailureListener {
+                onResult(emptyList()) // Return empty list on failure
+            }
+    }
 }
 
 /*fun addUser() {

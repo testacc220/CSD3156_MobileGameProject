@@ -8,4 +8,7 @@ interface AndroidLauncherInterface {
     fun checkUserDetails(getValUser: String, getValPw: String, callback: (Boolean) -> Unit)
     fun readDatabase2()
 
+    //fun readUsrDatabase(onResult: (Int) -> Unit)
+    fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit)
+//    fun regUsr()
 }

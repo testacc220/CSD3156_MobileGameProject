@@ -175,7 +175,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         }
 
         // Update UI
-//        gameLabel.setText("Score: ${gameState.getScore()}")
+        gameLabel.setText("Score: ${gameState.getScore()}")
 
         // Testing read from database haha
 //        androidLauncherInterface.readUsrDatabase { testScore ->
