@@ -9,13 +9,14 @@ import com.google.firebase.FirebaseApp
 import com.testacc220.csd3156_mobilegameproject.MainKt
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.testacc220.csd3156_mobilegameproject.AndroidLauncherInterface
 
 import javax.net.ssl.SSLContext
 
 
 
 /** Launches the Android application. */
-class AndroidLauncher : AndroidApplication() {
+class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SSLContext.getInstance("TLSv1.2").apply {
@@ -24,12 +25,41 @@ class AndroidLauncher : AndroidApplication() {
         }
         // Initialize Firebase
         FirebaseApp.initializeApp(this)
-        testFirestore()
-        initialize(MainKt(), AndroidApplicationConfiguration().apply {
-            // Configure your application here.
+//        testFirestore()
+//        readDatabase()
+        initialize(MainKt(this), AndroidApplicationConfiguration().apply {
             useImmersiveMode = true // Recommended, but not required.
         })
 
+    }
+
+    val userhs = {0}
+
+    override fun readUsrDatabase() :Int{
+        //Log.d("sdsds", "DocumentSnapshot entered")
+        val db = FirebaseFirestore.getInstance()
+        val usrName = "PukiMan2"
+        var hs = 4
+        db.collection("PlayerData")
+//        .orderBy("highscore",
+//            Query.Direction.DESCENDING)
+//        .whereEqualTo("username", usrName)
+//        .get()
+            .document(usrName)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    hs = document.getLong("highscore")?.toInt()?:0
+                    Log.d("Hello", "DocumentSnapshotTest data: $hs")
+                } else {
+                    Log.d("Hello", "No such document")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Hello", "get failed with ", exception)
+            }
+        return hs
+        // [END get_document]
     }
 }
 
@@ -69,3 +99,29 @@ fun testFirestore() {
         }*/
 }
 
+fun readDatabase() :Int{
+    //Log.d("sdsds", "DocumentSnapshot entered")
+    val db = FirebaseFirestore.getInstance()
+    val usrName = "PukiMan2"
+    var hs = 0
+    db.collection("PlayerData")
+//        .orderBy("highscore",
+//            Query.Direction.DESCENDING)
+//        .whereEqualTo("username", usrName)
+//        .get()
+        .document(usrName)
+        .get()
+        .addOnSuccessListener { document ->
+            if (document != null) {
+                hs = document.getLong("highscore")?.toInt()?:0
+                Log.d("Hello", "DocumentSnapshot data: $hs")
+            } else {
+                Log.d("Hello", "No such document")
+            }
+        }
+        .addOnFailureListener { exception ->
+            Log.d("Hello", "get failed with ", exception)
+        }
+    return hs
+    // [END get_document]
+}

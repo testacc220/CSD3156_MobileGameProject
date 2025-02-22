@@ -21,7 +21,7 @@ import com.badlogic.gdx.utils.viewport.Viewport
 import ktx.assets.disposeSafely
 //import com.google.firebase.firestore.FirebaseFirestore;
 
-class MainKt : Game() {
+class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
     lateinit var camera: OrthographicCamera
     lateinit var viewport: Viewport
     lateinit var batch: SpriteBatch
@@ -42,7 +42,7 @@ class MainKt : Game() {
         batch = SpriteBatch()
 
         // Transition directly to GameScene
-        setScreen(GameScene(this))
+        setScreen(GameScene(this, androidLauncher))
     }
 
     override fun dispose() {

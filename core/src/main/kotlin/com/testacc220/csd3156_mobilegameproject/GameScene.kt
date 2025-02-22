@@ -33,7 +33,7 @@ class CrossPlatformFileHandleResolver : FileHandleResolver {
     }
 }
 
-class GameScene(private val game: MainKt) : KtxScreen {
+class GameScene(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
     private val shapeRenderer = ShapeRenderer()
     private val gameState = GameState()
@@ -84,7 +84,7 @@ class GameScene(private val game: MainKt) : KtxScreen {
         // Initialize UI components
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
-        gameLabel = Label("Score: 0", labelStyle)
+        gameLabel = Label("Score: 1", labelStyle)
         table.setFillParent(true)
         table.top().left().pad(20f)  // Align to the top-left with padding
         table.add(gameLabel)
@@ -173,9 +173,10 @@ class GameScene(private val game: MainKt) : KtxScreen {
                 batch.draw(textureToUse, gem.x, gem.y, gem.width, gem.height)
             }
         }
-
+        val testScore = androidLauncherInterface.readUsrDatabase()
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
+        gameLabel.setText("$testScore")
         stage.act(delta)
         stage.draw()
     }
