@@ -263,6 +263,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         db.collection("PlayerData").document(usrNameTmp).set(testData)
             .addOnSuccessListener {
                 currUsrname = usrNameTmp
+                lastHighscore = 0
                 Log.d("hello", "user entry added ok")
             }
             .addOnFailureListener { e ->
@@ -286,6 +287,15 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 //            .set(newScoreData)
             .addOnSuccessListener { Log.d("ouch", "DocumentSnapshot successfully written!") }
             .addOnFailureListener { e -> Log.w("ouch", "Error writing document", e) }
+    }
+
+    override fun compareHighscore(inputScore : Int): Boolean
+    {
+        if(inputScore > lastHighscore) {
+            return true
+        } else {
+            return false
+        }
     }
 
     override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
