@@ -47,7 +47,7 @@ class GameObjects {
      */
     fun update(deltaTime: Float) {
         // Update all active gems
-        activeGems.forEach { it.update(deltaTime) }
+        // activeGems.forEach { it.update(deltaTime) }
 
         // Remove marked gems
         activeGems.removeAll(gemsToRemove)
