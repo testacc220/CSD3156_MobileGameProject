@@ -11,9 +11,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
 import com.testacc220.csd3156_mobilegameproject.AndroidLauncherInterface
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 import javax.net.ssl.SSLContext
-
+import kotlin.coroutines.resume
 
 
 /** Launches the Android application. */
@@ -111,7 +112,40 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     }*/
 
 
-    override fun checkUserNameAvail(desiredUsername : String, callback: (Boolean) -> Unit)
+    override suspend fun checkUserNameAvail(desiredUsername: String): Boolean {
+        Log.d("Hello", "checkUserNameAvail")
+        Log.d("Hello", "desiredUsername is, $desiredUsername")
+
+        return try {
+            val db = FirebaseFirestore.getInstance()
+            // Convert the Firebase async operation to a coroutine
+            val document = suspendCancellableCoroutine { continuation ->
+                db.collection("PlayerData")
+                    .document(desiredUsername)
+                    .get()
+                    .addOnSuccessListener { document ->
+                        continuation.resume(document)
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.d("Hello", "checkUserNameAvail get failed with ", exception)
+                        continuation.resume(null)
+                    }
+            }
+
+            if (document?.exists() == true) {
+                Log.d("Hello", "username already taken")
+                false  // username is taken
+            } else {
+                Log.d("Hello", "username free")
+                true   // username is available
+            }
+        } catch (e: Exception) {
+            Log.d("Hello", "checkUserNameAvail get failed with ", e)
+            true  // Return true on failure as in original code
+        }
+    }
+
+    override fun checkUserNameAvailOLD(desiredUsername : String, callback: (Boolean) -> Unit)
     {
         Log.d("Hello", "checkUserNameAvail")
         Log.d("Hello", "desiredUsername is, $desiredUsername")
@@ -138,7 +172,6 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
 
     }
-
     /*override fun setUserDetails(setValUser: String, setValPw: String)
     {
         usrName = setValUser

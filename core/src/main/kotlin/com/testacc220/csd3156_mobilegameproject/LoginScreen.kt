@@ -151,19 +151,25 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
     }
 
     private fun handleRegistration(username: String, password: String) {
-        androidLauncherInterface.checkUserNameAvail(username) {availBool ->
-            if(availBool) // username is free
+        //val isAvailable = androidLauncherInterface.checkUserNameAvail(username)
+        androidLauncherInterface.checkUserNameAvailOLD(username) {availBool ->
+            /*if(availBool) // username is free
             {
                 androidLauncherInterface.addUser(username, password)
                 //game.setScreen(GameScene(game, androidLauncherInterface))
-            }
-            else // username is false
-            {
-                showError("Username is already in use")
+            }*/
+            Gdx.app.postRunnable {
+                if (availBool) { // username is free
+                    androidLauncherInterface.addUser(username, password)
+                    game.setScreen(GameScene(game, androidLauncherInterface))
+                } else // username is false
+                {
+                    showError("Username is already in use")
 
-                // Reset text fields
-                //usernameField.setText("")
-                //passwordField.setText("")
+                    // Reset text fields
+                    //usernameField.setText("")
+                    //passwordField.setText("")
+                }
             }
         }
     }
