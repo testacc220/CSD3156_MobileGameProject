@@ -253,10 +253,20 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val gameOverLabel = Label("GAME OVER", labelStyle)
         gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
 
+        gameOverLabel.pack()
+        gameOverLabel.setPosition(
+            stage.width / 2 - gameOverLabel.prefWidth / 2,
+            stage.height / 2 + 100
+        )
+
         val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
         val playAgainButton = TextButton("Play Again", buttonStyle)
-        playAgainButton.setSize(300f, 120f)
-        playAgainButton.setPosition(stage.width / 2 - 150, stage.height / 2 - 50)
+
+        playAgainButton.setSize(500f, 120f)
+        playAgainButton.setPosition(
+            stage.width / 2 - playAgainButton.width / 2,
+            stage.height / 2 - playAgainButton.height / 2
+        )
 
         playAgainButton.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
