@@ -76,7 +76,7 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
                 var isEven = true
                 for ((index, entry) in leaderboardData.withIndex()) {
                     val entryLabel = Label("${index + 1}. ${entry.first} - ${entry.second}", labelStyle).apply {
-                        font.data.setScale(2f)
+                        font.data.setScale(3f)
                         }
 
                     // Alternate row colors (Red and Blue)
@@ -99,7 +99,9 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
 
         tableSec.top().left().pad(20f)
 
-        tableSec.add(backButton).padTop(20f).colspan(2).center().padBottom(30f).row()
+        tableSec.add(backButton).apply {
+            font.data.setScale(5f)
+        }.padTop(20f).colspan(2).center().padBottom(30f).row()
         stage.addActor(tableSec)
     }
 
@@ -107,7 +109,7 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
         // Set the background color for the entire screen to sky blue
         Gdx.gl.glClearColor(66f / 255f, 135f / 255f, 245f / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        font.data.setScale(2.5f)
+//        font.data.setScale(2.5f)
         stage.act(delta)
         stage.draw()
     }
