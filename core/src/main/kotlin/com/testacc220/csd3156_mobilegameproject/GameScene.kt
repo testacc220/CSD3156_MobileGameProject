@@ -4,7 +4,6 @@ import PhysicsEngine
 import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.math.Vector2
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.assets.disposeSafely
@@ -23,6 +22,9 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -55,6 +57,12 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
     private lateinit var yellowGemTexture: Texture
     private lateinit var yellowStarTexture: Texture
     private lateinit var yellowPentagonTexture: Texture
+
+    private lateinit var redHeartTexture: Texture
+    private lateinit var redGemTexture: Texture
+    private lateinit var redStarTexture: Texture
+    private lateinit var redPentagonTexture: Texture
+
     private lateinit var tier1GemTile: Texture
     private lateinit var tier2GemTile: Texture
 
@@ -77,6 +85,11 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
             yellowStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png", Texture::class.java)
             yellowPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png", Texture::class.java)
 
+            redHeartTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_48.png", Texture::class.java)
+            redGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_46.png", Texture::class.java)
+            redStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_45.png", Texture::class.java)
+            redPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_29.png", Texture::class.java)
+
             tier1GemTile = assetManager.get("BackTile_15.png", Texture::class.java)
             tier2GemTile = assetManager.get("BackTile_01.png", Texture::class.java)
         } catch (e: Exception) {
@@ -96,36 +109,36 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
         // Set up input handling
         Gdx.input.inputProcessor = object : InputAdapter() {
-            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-                lastTouchX = worldCoords.x
-                lastTouchY = worldCoords.y
-
-                // Check if touch is in play area
-                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
-                    isDragging = true
-                    return true
-                }
-                return false
-            }
-
-            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-                if (isDragging) {
-                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-                    val currentGem = gameState.getGameBoard().currentGem
-
-                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
-                        currentGem.moveTo(worldCoords.x, worldCoords.y)
-                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
-                    }
-                }
-                return true
-            }
-
-            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-                isDragging = false
-                return true
-            }
+//            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+//                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
+//                lastTouchX = worldCoords.x
+//                lastTouchY = worldCoords.y
+//
+//                // Check if touch is in play area
+//                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
+//                    isDragging = true
+//                    return true
+//                }
+//                return false
+//            }
+//
+//            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+//                if (isDragging) {
+//                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
+//                    val currentGem = gameState.getGameBoard().currentGem
+//
+//                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
+//                        currentGem.moveTo(worldCoords.x, worldCoords.y)
+//                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
+//                    }
+//                }
+//                return true
+//            }
+//
+//            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+//                isDragging = false
+//                return true
+//            }
         }
 
         // Initialize game state
@@ -149,24 +162,25 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         game.batch.use { batch ->
             // Draw background with rotation from SensorManager
             background?.let { bg ->
-                batch.draw(
-                    bg,
-                    0f,  // X position
-                    0f,  // Y position
-                    viewportWidth / 2,  // Origin X (center of rotation)
-                    viewportHeight / 2,  // Origin Y (center of rotation)
-                    viewportWidth,  // Width
-                    viewportHeight,  // Height
-                    1f,  // Scale X
-                    1f,  // Scale Y
-                    SensorManager.rotation,  // Rotation angle from SensorManager
-                    0,  // Source X
-                    0,  // Source Y
-                    bg.width,  // Source width
-                    bg.height,  // Source height
-                    false,  // Flip X
-                    false   // Flip Y
-                )
+                batch.draw(bg, 0f, 0f, viewportWidth, viewportHeight)
+//                batch.draw(
+//                    bg,
+//                    0f,  // X position
+//                    0f,  // Y position
+//                    viewportWidth / 2,  // Origin X (center of rotation)
+//                    viewportHeight / 2,  // Origin Y (center of rotation)
+//                    viewportWidth,  // Width
+//                    viewportHeight,  // Height
+//                    1f,  // Scale X
+//                    1f,  // Scale Y
+//                    SensorManager.rotation,  // Rotation angle from SensorManager
+//                    0,  // Source X
+//                    0,  // Source Y
+//                    bg.width,  // Source width
+//                    bg.height,  // Source height
+//                    false,  // Flip X
+//                    false   // Flip Y
+//                )
             }
         }
 
@@ -187,14 +201,30 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
                     gem.y - tilePadding / 2, gem.width + tilePadding,
                     gem.height + tilePadding)
 
-                val textureToUse = when (gem.type) {
-                    GemType.HEART -> yellowHeartTexture
-                    GemType.GEM -> yellowGemTexture
-                    GemType.STAR -> yellowStarTexture
-                    GemType.PENTAGON -> yellowPentagonTexture
-                    else -> yellowHeartTexture // Fallback to yellow heart
+                val gemTexture = when (gem.tier) {
+                    1 -> when (gem.type) {
+                        GemType.HEART -> yellowHeartTexture
+                        GemType.GEM -> yellowGemTexture
+                        GemType.STAR -> yellowStarTexture
+                        GemType.PENTAGON -> yellowPentagonTexture
+                        else -> yellowHeartTexture
+                    }
+                    2 -> when (gem.type) {
+                        GemType.HEART -> redHeartTexture
+                        GemType.GEM -> redGemTexture
+                        GemType.STAR -> redStarTexture
+                        GemType.PENTAGON -> redPentagonTexture
+                        else -> redHeartTexture
+                    }
+                    else -> when (gem.type) {
+                        GemType.HEART -> yellowHeartTexture
+                        GemType.GEM -> yellowGemTexture
+                        GemType.STAR -> yellowStarTexture
+                        GemType.PENTAGON -> yellowPentagonTexture
+                        else -> yellowHeartTexture
+                    }
                 }
-                batch.draw(textureToUse, gem.x, gem.y, gem.width, gem.height)
+                batch.draw(gemTexture, gem.x, gem.y, gem.width, gem.height)
             }
         }
 
@@ -206,6 +236,9 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 ////            Log.d("Hello", "Retrieved score: $testScore") // Debugging
 //            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
 //        }
+        if (gameState.getGameBoard().isGameOver) {
+            showGameOverUI()
+        }
 
         stage.act(delta)
         stage.draw()
@@ -247,6 +280,40 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         shapeRenderer.dispose()
     }
 
+    private fun showGameOverUI() {
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
+        labelStyle.font.data.setScale(7f)
+        val gameOverLabel = Label("GAME OVER", labelStyle)
+        gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
+
+        val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
+        val playAgainButton = TextButton("Play Again", buttonStyle)
+        playAgainButton.setSize(300f, 120f)
+        playAgainButton.setPosition(stage.width / 2 - 150, stage.height / 2 - 50)
+
+        playAgainButton.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                restartGame()
+            }
+        })
+
+        stage.addActor(gameOverLabel)
+        stage.addActor(playAgainButton)
+    }
+
+    private fun restartGame() {
+        gameState.resetGame()
+        stage.clear()  // Clear all UI elements including "Game Over" text
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+        labelStyle.font.data.setScale(7f)
+        gameLabel = Label("Score: 0", labelStyle)
+        table.setFillParent(true)
+        table.top().left().pad(20f)
+        table.add(gameLabel)
+        stage.addActor(table)
+        Gdx.app.log("GameScene", "Game Restarted!")
+    }
+
     private fun enqueueAssets() {
         try {
             fun assertFileExists(filePath: String) {
@@ -272,6 +339,11 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
             val yellowStarFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png"
             val yellowPentagonFP = "kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png"
 
+            val redHeartFP = "kenney_puzzle-pack-2/PNG/Tiles red/tileRed_48.png"
+            val redGemFP = "kenney_puzzle-pack-2/PNG/Tiles red/tileRed_46.png"
+            val redStarFP = "kenney_puzzle-pack-2/PNG/Tiles red/tileRed_45.png"
+            val redPentagonFP = "kenney_puzzle-pack-2/PNG/Tiles red/tileRed_29.png"
+
             val tier1GemTileFP = "BackTile_15.png"
             val tier2GemTileFP = "BackTile_01.png"
 
@@ -290,6 +362,22 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
             // Yellow Pentagon
             assertFileExists(yellowPentagonFP)
             assetManager.load(yellowPentagonFP, Texture::class.java)
+
+            // Red Heart
+            assertFileExists(redHeartFP)
+            assetManager.load(redHeartFP, Texture::class.java)
+
+            // Red Gem
+            assertFileExists(redGemFP)
+            assetManager.load(redGemFP, Texture::class.java)
+
+            // Red Star
+            assertFileExists(redStarFP)
+            assetManager.load(redStarFP, Texture::class.java)
+
+            // Red Pentagon
+            assertFileExists(redPentagonFP)
+            assetManager.load(redPentagonFP, Texture::class.java)
 
             assertFileExists(tier1GemTileFP)
             assetManager.load(tier1GemTileFP, Texture::class.java)
