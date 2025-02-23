@@ -41,7 +41,7 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
     private val backButton: TextButton = TextButton("<Back", backButtonStyle).apply {
         addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
-                game.setScreen(MainMenu(game, androidLauncherInterface))
+                game.setScreen(MainMenuScreen(game, androidLauncherInterface))
             }
         })
     }
