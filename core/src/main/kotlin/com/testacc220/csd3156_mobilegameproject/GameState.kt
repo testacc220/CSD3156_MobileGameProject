@@ -5,7 +5,7 @@ import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-class GameState {
+class GameState (private val androidLauncherInterface: AndroidLauncherInterface){
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
     private var isProcessingMerges  = false
@@ -31,7 +31,10 @@ class GameState {
     // Update game state
     fun update(deltaTime: Float) {
         if (gameBoard.isGameOver)
+        {
+            androidLauncherInterface.updateHighscore(getScore())
             return
+        }
 
         spawnTimer += deltaTime
 
