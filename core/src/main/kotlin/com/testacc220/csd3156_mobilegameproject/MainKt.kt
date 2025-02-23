@@ -28,6 +28,7 @@ class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
     lateinit var loginScreen: LoginScreen
     lateinit var gameScene: GameScene
     lateinit var mainMenu: MainMenu
+    lateinit var leadScreen: Leaderboard
 
     override fun create() {
         Gdx.app.log("CWD", "Current Working Directory: ${System.getProperty("user.dir")}")
@@ -48,6 +49,7 @@ class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
         loginScreen = LoginScreen(this, androidLauncher)
         gameScene = GameScene(this, androidLauncher)
         mainMenu = MainMenu(this, androidLauncher)
+        leadScreen = Leaderboard(this, androidLauncher)
 
         // Transition directly to GameScene
         setScreen(loginScreen)
