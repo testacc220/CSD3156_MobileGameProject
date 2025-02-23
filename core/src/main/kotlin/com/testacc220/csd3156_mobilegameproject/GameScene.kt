@@ -15,13 +15,13 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.InputAdapter
+import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import com.badlogic.gdx.assets.loaders.FileHandleResolver
 import com.badlogic.gdx.assets.loaders.SkinLoader
 import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
-import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
@@ -106,40 +106,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         table.add(gameLabel)
 
         stage.addActor(table)
-
-        // Set up input handling
-        Gdx.input.inputProcessor = object : InputAdapter() {
-//            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                lastTouchX = worldCoords.x
-//                lastTouchY = worldCoords.y
-//
-//                // Check if touch is in play area
-//                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
-//                    isDragging = true
-//                    return true
-//                }
-//                return false
-//            }
-//
-//            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-//                if (isDragging) {
-//                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                    val currentGem = gameState.getGameBoard().currentGem
-//
-//                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
-//                        currentGem.moveTo(worldCoords.x, worldCoords.y)
-//                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
-//                    }
-//                }
-//                return true
-//            }
-//
-//            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                isDragging = false
-//                return true
-//            }
-        }
+        Gdx.input.inputProcessor = stage
 
         // Initialize game state
         gameState.initialize(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -286,23 +253,36 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val gameOverLabel = Label("GAME OVER", labelStyle)
         gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
 
+        gameOverLabel.pack()
+        gameOverLabel.setPosition(
+            stage.width / 2 - gameOverLabel.prefWidth / 2,
+            stage.height / 2 + 100
+        )
+
         val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
         val playAgainButton = TextButton("Play Again", buttonStyle)
-        playAgainButton.setSize(300f, 120f)
-        playAgainButton.setPosition(stage.width / 2 - 150, stage.height / 2 - 50)
+
+        playAgainButton.setSize(500f, 120f)
+        playAgainButton.setPosition(
+            stage.width / 2 - playAgainButton.width / 2,
+            stage.height / 2 - playAgainButton.height / 2
+        )
 
         playAgainButton.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
                 restartGame()
             }
         })
 
         stage.addActor(gameOverLabel)
         stage.addActor(playAgainButton)
+
     }
 
     private fun restartGame() {
         gameState.resetGame()
+        table.clearChildren()
         stage.clear()  // Clear all UI elements including "Game Over" text
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)

@@ -30,6 +30,9 @@ class GameState {
 
     // Update game state
     fun update(deltaTime: Float) {
+        if (gameBoard.isGameOver)
+            return
+
         spawnTimer += deltaTime
 
         // Apply gravity to all gems.
@@ -47,7 +50,7 @@ class GameState {
         }
 
         // Spawn a new gem every 1 second.
-        if (!gameBoard.isGameOver && spawnTimer >= 1f && !isProcessingMerges) {
+        if (spawnTimer >= 1f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
@@ -71,6 +74,10 @@ class GameState {
 
         val proposedX = gem.x + dx
         val proposedY = gem.y + dy
+
+        val minX = gameBoard.playAreaOffsetX
+        val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE
+        val clampedX = proposedX.coerceIn(minX, maxX)
 
         // The landing y is at least the bottom of the play area.
         var landingY = gameBoard.playAreaOffsetY
@@ -100,11 +107,11 @@ class GameState {
             val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
             if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
                 gameBoard.isGameOver = true
-                Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
+                // Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
             }
         } else {
             // Otherwise, let the gem fall normally.
-            gem.x = proposedX
+            gem.x = clampedX
             gem.y = proposedY
         }
     }
