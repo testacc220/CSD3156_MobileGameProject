@@ -155,7 +155,7 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
                     //showError("Invalid username or password")
                 } else {
                     showError(" ")
-                    game.setScreen(MainMenu(game, androidLauncherInterface))
+                    game.setScreen(MainMenuScreen(game, androidLauncherInterface))
 //                    androidLauncherInterface.updateHighscore(12342)
                 }
             }
