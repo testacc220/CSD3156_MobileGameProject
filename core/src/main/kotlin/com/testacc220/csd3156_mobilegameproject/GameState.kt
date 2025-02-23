@@ -32,7 +32,10 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     fun update(deltaTime: Float) {
         if (gameBoard.isGameOver)
         {
-            androidLauncherInterface.updateHighscore(getScore())
+            if(androidLauncherInterface.compareHighscore(getScore()))
+            {
+                androidLauncherInterface.updateHighscore(getScore())
+            }
             return
         }
 
