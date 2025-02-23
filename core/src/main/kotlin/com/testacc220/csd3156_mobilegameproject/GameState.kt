@@ -5,12 +5,19 @@ import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import kotlin.math.abs
 import kotlin.math.sqrt
 
+/**
+ * GameState manages the core game logic, including physics simulation,
+ * gem spawning, merging mechanics, and overall game progression.
+ */
 class GameState {
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
     private var isProcessingMerges  = false
-    private val MAX_ANGLE = 45f;
+    private val MAX_ANGLE = 45f; // Maximum tilt angle for device rotation
 
+    /**
+     * Defines possible orientations for the game board
+     */
     enum class Orientation {
         VERTICAL,
         HORIZONTAL
@@ -18,24 +25,35 @@ class GameState {
 
     private var currentOrientation = Orientation.VERTICAL
 
+    // Physics constants
     // Gravity in pixels per second.
     private val GRAVITY = 500f
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
-    // Initialize game state
+    /**
+     * Initializes the game state with screen dimensions
+     *
+     * @param screenWidth Width of the device screen
+     * @param screenHeight Height of the device screen
+     */
     fun initialize(screenWidth: Float, screenHeight: Float) {
         gameBoard.calculateScreenLayout(screenWidth, screenHeight)
     }
 
-    // Update game state
+    /**
+     * Main update loop for game state.
+     * Handles gravity, spawning, merging, and game over conditions.
+     *
+     * @param deltaTime Time elapsed since last frame in seconds
+     */
     fun update(deltaTime: Float) {
         if (gameBoard.isGameOver)
             return
 
         spawnTimer += deltaTime
 
-        // Apply gravity to all gems.
+        // Apply gravity to all non-moving gems
         gameObjects.getActiveGems().forEach { gem ->
             if (!gem.isMoving) {
                 applyGravity(gem, deltaTime)
@@ -44,18 +62,25 @@ class GameState {
 
         gameBoard.update(deltaTime)
 
-        // If everything is stable, check for potential merges
+        // Check for merges when board is stable
         if (gameBoard.isStable() && !isProcessingMerges) {
             checkForMerges()
         }
 
-        // Spawn a new gem every 1 second.
+        // Spawn new gems periodically
         if (spawnTimer >= 1f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
     }
 
+    /**
+     * Applies gravity to a gem based on device tilt.
+     * Handles collision detection and landing mechanics.
+     *
+     * @param gem The gem to apply gravity to
+     * @param deltaTime Time elapsed since last frame
+     */
     private fun applyGravity(gem: Gem, deltaTime: Float) {
         var angleDegrees = SensorManager.rotation
          Gdx.app.log("currentRotation", "angleDegrees: $angleDegrees")
