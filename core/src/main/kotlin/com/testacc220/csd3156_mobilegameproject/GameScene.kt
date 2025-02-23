@@ -39,7 +39,7 @@ class CrossPlatformFileHandleResolver : FileHandleResolver {
 class GameScene(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
     private val shapeRenderer = ShapeRenderer()
-    private val gameState = GameState()
+    private val gameState = GameState(androidLauncherInterface)
     private var background: Texture? = null
     private lateinit var skin: Skin
     private val stage: Stage = Stage(ScreenViewport())
@@ -164,9 +164,9 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
                 }
 
                 val tilePadding = 8f
-                /*batch.draw(tileTexture, gem.x - tilePadding / 2,
+                batch.draw(tileTexture, gem.x - tilePadding / 2,
                     gem.y - tilePadding / 2, gem.width + tilePadding,
-                    gem.height + tilePadding)*/
+                    gem.height + tilePadding)
 
                 val gemTexture = when (gem.tier) {
                     1 -> when (gem.type) {

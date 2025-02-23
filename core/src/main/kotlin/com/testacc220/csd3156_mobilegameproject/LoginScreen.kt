@@ -75,8 +75,8 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
         val errorLabelStyle = Label.LabelStyle(font, Color(1f, 0.3f, 0.3f, 1f))
 
         // Create UI elements
-        titleLabel = Label("Welcome", labelStyle).apply {
-            setFontScale(1.5f)
+        titleLabel = Label("Welcome to GemSmash ", labelStyle).apply {
+            setFontScale(2.5f)
         }
 
         usernameField = TextField("", textFieldStyle).apply {
