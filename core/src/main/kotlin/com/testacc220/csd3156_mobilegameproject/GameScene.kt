@@ -282,6 +282,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
     private fun restartGame() {
         gameState.resetGame()
+        table.clearChildren()
         stage.clear()  // Clear all UI elements including "Game Over" text
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)

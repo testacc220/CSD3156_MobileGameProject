@@ -29,6 +29,9 @@ class GameState {
 
     // Update game state
     fun update(deltaTime: Float) {
+        if (gameBoard.isGameOver)
+            return
+
         spawnTimer += deltaTime
 
         // Apply gravity to all gems.
@@ -46,7 +49,7 @@ class GameState {
         }
 
         // Spawn a new gem every 1 second.
-        if (!gameBoard.isGameOver && spawnTimer >= 1f && !isProcessingMerges) {
+        if (spawnTimer >= 1f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
