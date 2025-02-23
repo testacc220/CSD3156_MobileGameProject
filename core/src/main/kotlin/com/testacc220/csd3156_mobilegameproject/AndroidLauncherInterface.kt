@@ -13,5 +13,6 @@ interface AndroidLauncherInterface {
 //    fun getLastHighscore():Int
     fun updateHighscore(newHighscore : Int)
     fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit)
+    fun compareHighscore(inputScore : Int): Boolean
 //    fun regUsr()
 }
