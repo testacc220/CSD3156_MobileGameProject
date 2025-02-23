@@ -72,6 +72,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
         // Spawn a new gem every 1 second.
         if (gameBoard.currentGem == null && !isProcessingMerges) {
+            SensorManager.VibrationPatterns.shortClick()
             spawnGem()
             spawnTimer = 0f
         }
@@ -187,6 +188,8 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                 if (!gameObjects.getActiveGems().contains(gem)) continue
                 val cluster = findClusterProximity(gem, gems)
                 if (cluster.size >= 3) {
+                    SensorManager.VibrationPatterns.mediumClick()
+
                     mergeOccurred = true
                     performMerge(cluster)
                     break // Restart scanning after a merge for chain reactions.
