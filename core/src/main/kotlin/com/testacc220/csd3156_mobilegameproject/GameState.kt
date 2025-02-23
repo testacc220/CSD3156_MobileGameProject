@@ -23,6 +23,8 @@ class GameState {
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
+    private var spawn = true
+
     // Initialize game state
     fun initialize(screenWidth: Float, screenHeight: Float) {
         gameBoard.calculateScreenLayout(screenWidth, screenHeight)
@@ -34,7 +36,7 @@ class GameState {
             return
 
         spawnTimer += deltaTime
-
+        spawn = false
         // Apply gravity to all gems.
         gameObjects.getActiveGems().forEach { gem ->
             if (!gem.isMoving) {
@@ -50,9 +52,8 @@ class GameState {
         }
 
         // Spawn a new gem every 1 second.
-        if (spawnTimer >= 2f && !isProcessingMerges) {
+        if (spawn && !isProcessingMerges) {
             spawnGem()
-            spawnTimer = 0f
         }
     }
 
@@ -100,6 +101,7 @@ class GameState {
         if (proposedY <= landingY) {
             gem.y = landingY
             gem.isMoving = false
+            spawn = true
             if (gameBoard.currentGem == gem) {
                 gameBoard.currentGem = null
             }
