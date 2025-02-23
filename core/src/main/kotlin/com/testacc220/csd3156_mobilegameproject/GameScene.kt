@@ -22,6 +22,9 @@ import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -33,7 +36,7 @@ class CrossPlatformFileHandleResolver : FileHandleResolver {
     }
 }
 
-class GameScene(private val game: MainKt) : KtxScreen {
+class GameScene(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
     private val shapeRenderer = ShapeRenderer()
     private val gameState = GameState()
@@ -82,6 +85,11 @@ class GameScene(private val game: MainKt) : KtxScreen {
             yellowStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_45.png", Texture::class.java)
             yellowPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles yellow/tileYellow_29.png", Texture::class.java)
 
+            redHeartTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_48.png", Texture::class.java)
+            redGemTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_46.png", Texture::class.java)
+            redStarTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_45.png", Texture::class.java)
+            redPentagonTexture = assetManager.get("kenney_puzzle-pack-2/PNG/Tiles red/tileRed_29.png", Texture::class.java)
+
             tier1GemTile = assetManager.get("BackTile_15.png", Texture::class.java)
             tier2GemTile = assetManager.get("BackTile_01.png", Texture::class.java)
         } catch (e: Exception) {
@@ -92,46 +100,13 @@ class GameScene(private val game: MainKt) : KtxScreen {
         // Initialize UI components
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
-        gameLabel = Label("Score: 0", labelStyle)
+        gameLabel = Label("Score: 1", labelStyle)
         table.setFillParent(true)
         table.top().left().pad(20f)  // Align to the top-left with padding
         table.add(gameLabel)
 
         stage.addActor(table)
-
-        // Set up input handling
-        Gdx.input.inputProcessor = object : InputAdapter() {
-//            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                lastTouchX = worldCoords.x
-//                lastTouchY = worldCoords.y
-//
-//                // Check if touch is in play area
-//                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
-//                    isDragging = true
-//                    return true
-//                }
-//                return false
-//            }
-//
-//            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-//                if (isDragging) {
-//                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                    val currentGem = gameState.getGameBoard().currentGem
-//
-//                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
-//                        currentGem.moveTo(worldCoords.x, worldCoords.y)
-//                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
-//                    }
-//                }
-//                return true
-//            }
-//
-//            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                isDragging = false
-//                return true
-//            }
-        }
+        Gdx.input.inputProcessor = stage
 
         // Initialize game state
         gameState.initialize(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -189,9 +164,9 @@ class GameScene(private val game: MainKt) : KtxScreen {
                 }
 
                 val tilePadding = 8f
-                batch.draw(tileTexture, gem.x - tilePadding / 2,
+                /*batch.draw(tileTexture, gem.x - tilePadding / 2,
                     gem.y - tilePadding / 2, gem.width + tilePadding,
-                    gem.height + tilePadding)
+                    gem.height + tilePadding)*/
 
                 val gemTexture = when (gem.tier) {
                     1 -> when (gem.type) {
@@ -222,6 +197,16 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
+
+        // Testing read from database haha
+//        androidLauncherInterface.readUsrDatabase { testScore ->
+////            Log.d("Hello", "Retrieved score: $testScore") // Debugging
+//            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
+//        }
+        if (gameState.getGameBoard().isGameOver) {
+            showGameOverUI()
+        }
+
         stage.act(delta)
         stage.draw()
     }
@@ -260,6 +245,53 @@ class GameScene(private val game: MainKt) : KtxScreen {
         stage.disposeSafely()
         assetManager.disposeSafely()
         shapeRenderer.dispose()
+    }
+
+    private fun showGameOverUI() {
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
+        labelStyle.font.data.setScale(7f)
+        val gameOverLabel = Label("GAME OVER", labelStyle)
+        gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
+
+        gameOverLabel.pack()
+        gameOverLabel.setPosition(
+            stage.width / 2 - gameOverLabel.prefWidth / 2,
+            stage.height / 2 + 100
+        )
+
+        val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
+        val playAgainButton = TextButton("Play Again", buttonStyle)
+
+        playAgainButton.setSize(500f, 120f)
+        playAgainButton.setPosition(
+            stage.width / 2 - playAgainButton.width / 2,
+            stage.height / 2 - playAgainButton.height / 2
+        )
+
+        playAgainButton.addListener(object : ClickListener() {
+            override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
+                restartGame()
+            }
+        })
+
+        stage.addActor(gameOverLabel)
+        stage.addActor(playAgainButton)
+
+    }
+
+    private fun restartGame() {
+        gameState.resetGame()
+        table.clearChildren()
+        stage.clear()  // Clear all UI elements including "Game Over" text
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+        labelStyle.font.data.setScale(7f)
+        gameLabel = Label("Score: 0", labelStyle)
+        table.setFillParent(true)
+        table.top().left().pad(20f)
+        table.add(gameLabel)
+        stage.addActor(table)
+        Gdx.app.log("GameScene", "Game Restarted!")
     }
 
     private fun enqueueAssets() {

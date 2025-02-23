@@ -2,6 +2,8 @@ package com.testacc220.csd3156_mobilegameproject.utils
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.VibrationType
+import kotlin.math.atan2
+import kotlin.math.PI
 
 object SensorManager {
     // Accelerometer values
@@ -29,16 +31,40 @@ object SensorManager {
 
     // Update rotation based on sensor data
     fun updateRotation(delta: Float) {
-        val targetRotation = if (hasGyroscope) {
-            -gyroY * MAX_ROTATION_ANGLE
-        } else if (hasAccelerometer) {
-            accelX * MAX_ROTATION_ANGLE
+        val targetRotation = if (hasAccelerometer) {
+            // Calculate rotation angle using arctan2
+            // In landscape: atan2(accelY, accelZ)
+            // In portrait: atan2(-accelX, accelZ)
+            val angleRadians = atan2(accelY, accelZ)
+            val angleDegrees = (angleRadians * 180f / PI).toFloat()
+
+            // Adjust angle based on expected orientation
+            angleDegrees
+        } else if (hasGyroscope) {
+            // Use integrated gyroscope data
+            -gyroX * MAX_ROTATION_ANGLE
         } else {
             0f
         }
 
         // Apply smoothing
         currentRotation += (targetRotation - currentRotation) * ROTATION_SMOOTHING_FACTOR
+    }
+    fun getTiltAngle(): Float {
+        return if (hasAccelerometer) {
+            val angleRadians = atan2(accelY, accelZ)
+            (angleRadians * 180f / PI).toFloat()
+        } else {
+            0f
+        }
+    }
+    fun getDeviceOrientation(): Float {
+        return if (hasAccelerometer) {
+            val angle = atan2(-accelX, accelY) * 180f / PI
+            ((angle + 360f) % 360f).toFloat()
+        } else {
+            0f
+        }
     }
 
     // Customize rotation parameters

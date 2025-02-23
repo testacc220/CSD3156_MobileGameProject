@@ -43,6 +43,10 @@ class GameObjects {
         return activeGems.find { it.uid == uid }
     }
 
+    fun clearAllGems() {
+        activeGems.clear()
+    }
+
     fun removeGemByUid(uid: Long) {
         activeGems.find { it.uid == uid }?.let { removeGem(it) }
     }

@@ -11,13 +11,18 @@ buildscript {
   dependencies {
     classpath "com.android.tools.build:gradle:8.5.2"
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    classpath 'com.google.gms:google-services:4.4.2'  // Firebase Plugin
 
   }
 }
 
+//apply plugin: 'com.google.gms.google-services'
+
+
 allprojects {
   apply plugin: 'eclipse'
   apply plugin: 'idea'
+  //apply plugin: 'com.google.gms.google-services'  // Firebase Plugin
 
   // This allows you to "Build and run using IntelliJ IDEA", an option in IDEA's Settings.
   idea {
@@ -58,7 +63,7 @@ configure(subprojects - project(':android')) {
   }
   compileKotlin.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
   compileTestKotlin.compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-  
+
 }
 
 subprojects {
