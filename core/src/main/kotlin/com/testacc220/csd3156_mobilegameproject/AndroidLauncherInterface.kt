@@ -10,6 +10,8 @@ interface AndroidLauncherInterface {
     fun readDatabase2()
 
     //fun readUsrDatabase(onResult: (Int) -> Unit)
+//    fun getLastHighscore():Int
+    fun updateHighscore(newHighscore : Int)
     fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit)
 //    fun regUsr()
 }

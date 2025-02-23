@@ -151,6 +151,7 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
                 } else {
                     showError(" ")
                     game.setScreen(MainMenu(game, androidLauncherInterface))
+//                    androidLauncherInterface.updateHighscore(12342)
                 }
             }
         }

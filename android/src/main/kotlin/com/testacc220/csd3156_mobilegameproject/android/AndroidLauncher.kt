@@ -20,7 +20,8 @@ import kotlin.coroutines.resume
 
 /** Launches the Android application. */
 class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
-    public var usrName = ""
+    public var lastHighscore = 0
+    public var currUsrname = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -200,6 +201,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                     if(getValPw == databaseSidePW) // if password of username match
                     {
                         callback(1)
+                        currUsrname = getValUser
+                        lastHighscore = document.getLong("highscore")?.toInt() ?: 0
                         Log.d("Hello", "callback true for checkuserdetails")
                     }
                     else // if password is wrong
@@ -259,6 +262,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser instance gotten")
         db.collection("PlayerData").document(usrNameTmp).set(testData)
             .addOnSuccessListener {
+                currUsrname = usrNameTmp
                 Log.d("hello", "user entry added ok")
             }
             .addOnFailureListener { e ->
@@ -268,8 +272,21 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
+    override fun updateHighscore(newHighscore : Int)
+    {
+        val db = FirebaseFirestore.getInstance()
 
-
+//        val newScoreData = hashMapOf(
+//            "password" to "testoo",
+//            "highscore" to 1232)
+        Log.d("ouch", "DocumentSnapshot successfully written for $currUsrname!")
+        db.collection("PlayerData")
+            .document(currUsrname)
+            .update("highscore", newHighscore)
+//            .set(newScoreData)
+            .addOnSuccessListener { Log.d("ouch", "DocumentSnapshot successfully written!") }
+            .addOnFailureListener { e -> Log.w("ouch", "Error writing document", e) }
+    }
 
     override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
         val db = FirebaseFirestore.getInstance()
