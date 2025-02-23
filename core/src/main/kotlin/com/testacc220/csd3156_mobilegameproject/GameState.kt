@@ -23,7 +23,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
     // Physics constants
     // Gravity in pixels per second.
-    private val GRAVITY = 500f
+    private val GRAVITY = 300
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
