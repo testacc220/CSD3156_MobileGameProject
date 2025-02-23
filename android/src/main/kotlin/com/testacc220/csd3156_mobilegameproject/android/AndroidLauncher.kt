@@ -2,6 +2,7 @@ package com.testacc220.csd3156_mobilegameproject.android
 
 import android.os.Bundle
 import android.util.Log
+import com.badlogic.gdx.Gdx
 
 import com.badlogic.gdx.backends.android.AndroidApplication
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration
@@ -243,7 +244,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
         val testData = hashMapOf(
             "password" to passWrdTmp,
-            "highscore" to "0",
+            "highscore" to 0,
             "username" to usrNameTmp
 
         )
@@ -273,25 +274,37 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
+        // Remove the clearPersistence call
         db.collection("PlayerData")
             .orderBy("highscore", Query.Direction.DESCENDING)
             .limit(10)
             .get()
             .addOnSuccessListener { querySnap ->
-                val retHs = querySnap.documents.mapNotNull { document ->
-                    val username = document.id.takeIf { it.isNotBlank() } ?: "Unknown"
-                    val hs = document.getLong("highscore")?.toInt() ?: 0
+                try {
+                    val retHs = querySnap.documents.mapNotNull { document ->
+                        val username = document.id.takeIf { it.isNotBlank() } ?: "Unknown"
+                        val hs = document.getLong("highscore")?.toInt() ?: 0
 
-                    Log.w("Hello", "Fetched: $username - Score: $hs")
-
-                    Pair(username, hs)
+                        Log.w("Hello", "Fetched: $username - Score: $hs")
+                        Pair(username, hs)
+                    }
+                    Log.d("Hello", "Total leaderboard entries: ${retHs.size}")
+                    // Ensure callback runs on main thread
+                    Gdx.app.postRunnable {
+                        onResult(retHs)
+                    }
+                } catch (e: Exception) {
+                    Log.e("Hello", "Error processing query results", e)
+                    Gdx.app.postRunnable {
+                        onResult(emptyList())
+                    }
                 }
-                Log.d("Hello", "Total leaderboard entries: ${retHs.size}")
-                onResult(retHs)
             }
             .addOnFailureListener { e ->
                 Log.e("Hello", "Firebase query failed", e)
-                onResult(emptyList())  // Return empty list on failure
+                Gdx.app.postRunnable {
+                    onResult(emptyList())
+                }
             }
     }
 

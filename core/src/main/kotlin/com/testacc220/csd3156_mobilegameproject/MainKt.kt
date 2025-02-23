@@ -27,6 +27,7 @@ class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
     lateinit var batch: SpriteBatch
     lateinit var loginScreen: LoginScreen
     lateinit var gameScene: GameScene
+    lateinit var mainMenu: MainMenu
 
     override fun create() {
         Gdx.app.log("CWD", "Current Working Directory: ${System.getProperty("user.dir")}")
@@ -46,9 +47,10 @@ class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
         // Initialize screens
         loginScreen = LoginScreen(this, androidLauncher)
         gameScene = GameScene(this, androidLauncher)
+        mainMenu = MainMenu(this, androidLauncher)
 
         // Transition directly to GameScene
-        setScreen(loginScreen)
+        setScreen(mainMenu)
     }
 
     override fun dispose() {

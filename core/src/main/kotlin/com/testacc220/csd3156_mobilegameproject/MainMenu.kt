@@ -80,6 +80,11 @@ class MainMenu(private val game: MainKt, private val androidLauncherInterface: A
     }
 
     private fun startGame() {
+        androidLauncherInterface.getTopTenHs { topScores ->
+            topScores.forEach { (user, score) ->
+
+            }
+        }
 //        game.setScreen(GameScene(game, androidLauncherInterface))
     }
 
