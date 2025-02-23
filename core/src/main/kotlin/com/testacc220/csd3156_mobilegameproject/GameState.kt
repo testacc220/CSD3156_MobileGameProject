@@ -9,7 +9,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
     private var isProcessingMerges  = false
-    private val MAX_ANGLE = 45f; // Maximum tilt angle for device rotation
+    private val MAX_ANGLE = 60f; // Maximum tilt angle for device rotation
 
     /**
      * Defines possible orientations for the game board
@@ -23,7 +23,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
     // Physics constants
     // Gravity in pixels per second.
-    private val GRAVITY = 300
+    private var GRAVITY = 450
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
@@ -54,6 +54,11 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         }
 
         spawnTimer += deltaTime
+        if (spawnTimer >= 20.0f)
+        {
+            GRAVITY += 30
+            spawnTimer = 0f
+        }
 
         var toSpawn = false
         // Apply gravity to all non-moving gems
@@ -74,7 +79,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         if (gameBoard.currentGem == null && !isProcessingMerges) {
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
-            spawnTimer = 0f
+
         }
     }
 
