@@ -148,15 +148,15 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
             username.length < 3 -> showError("Username must be at least 3 characters")
             password.length < 6 -> showError("Password must be at least 6 characters")
             !isLoginMode -> handleRegistration(username, password)
-            else -> {
-                if (username.length >= 3 && password.length >= 6) {
-                    isValidCredentials(username, password) { isValid ->
-                        if (isValid) {
-                            showError(" ")
-                            // game.setScreen(GameScene(game, androidLauncherInterface))
-                            game.setScreen(MainMenuScreen(game, androidLauncherInterface))
-                        }
-                    }
+        }
+        if (isLoginMode && username.length >= 3 && password.length >= 6) {
+            isValidCredentials(username, password) { isValid ->
+                if (!isValid) {
+                    //showError("Invalid username or password")
+                } else {
+                    showError(" ")
+                    game.setScreen(MainMenuScreen(game, androidLauncherInterface))
+//                    androidLauncherInterface.updateHighscore(12342)
                 }
             }
         }
