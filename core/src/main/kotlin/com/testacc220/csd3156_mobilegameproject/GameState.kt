@@ -55,12 +55,15 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
         spawnTimer += deltaTime
 
+        var toSpawn = false
         // Apply gravity to all non-moving gems
         gameObjects.getActiveGems().forEach { gem ->
             if (!gem.isMoving) {
                 applyGravity(gem, deltaTime)
             }
         }
+
+
 
         gameBoard.update(deltaTime)
 
@@ -70,7 +73,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         }
 
         // Spawn a new gem every 1 second.
-        if (spawnTimer >= 3f && !isProcessingMerges) {
+        if (gameBoard.currentGem == null && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }

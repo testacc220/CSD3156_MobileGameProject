@@ -71,7 +71,7 @@ class GameBoard {
      */
     fun update(deltaTime: Float) {
         gameObjects.update(deltaTime)
-        currentGem?.update(deltaTime)
+        //currentGem?.update(deltaTime)
     }
 
     /**
