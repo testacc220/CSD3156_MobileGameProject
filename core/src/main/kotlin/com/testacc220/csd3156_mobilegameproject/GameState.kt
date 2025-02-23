@@ -64,6 +64,10 @@ class GameState {
         val proposedX = gem.x + dx
         val proposedY = gem.y + dy
 
+        val minX = gameBoard.playAreaOffsetX
+        val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE
+        val clampedX = proposedX.coerceIn(minX, maxX)
+
         // The landing y is at least the bottom of the play area.
         var landingY = gameBoard.playAreaOffsetY
 
@@ -96,7 +100,7 @@ class GameState {
             }
         } else {
             // Otherwise, let the gem fall normally.
-            gem.x = proposedX
+            gem.x = clampedX
             gem.y = proposedY
         }
     }
