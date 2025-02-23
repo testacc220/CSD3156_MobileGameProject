@@ -5,11 +5,7 @@ import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 import kotlin.math.abs
 import kotlin.math.sqrt
 
-/**
- * GameState manages the core game logic, including physics simulation,
- * gem spawning, merging mechanics, and overall game progression.
- */
-class GameState {
+class GameState (private val androidLauncherInterface: AndroidLauncherInterface){
     private val gameBoard = GameBoard()
     private val gameObjects = GameObjects()
     private var isProcessingMerges  = false
@@ -49,7 +45,13 @@ class GameState {
      */
     fun update(deltaTime: Float) {
         if (gameBoard.isGameOver)
+        {
+            if(androidLauncherInterface.compareHighscore(getScore()))
+            {
+                androidLauncherInterface.updateHighscore(getScore())
+            }
             return
+        }
 
         spawnTimer += deltaTime
 
@@ -67,8 +69,8 @@ class GameState {
             checkForMerges()
         }
 
-        // Spawn new gems periodically
-        if (spawnTimer >= 1f && !isProcessingMerges) {
+        // Spawn a new gem every 1 second.
+        if (spawnTimer >= 3f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
@@ -83,64 +85,66 @@ class GameState {
      */
     private fun applyGravity(gem: Gem, deltaTime: Float) {
         var angleDegrees = SensorManager.rotation
-         Gdx.app.log("currentRotation", "angleDegrees: $angleDegrees")
-        if(angleDegrees > MAX_ANGLE)
-        {
-            angleDegrees = MAX_ANGLE
-        }
-        else if (angleDegrees < -MAX_ANGLE)
-        {
-            angleDegrees = -MAX_ANGLE
-        }
+        Gdx.app.log("currentRotation", "angleDegrees: $angleDegrees")
+
+        angleDegrees = angleDegrees.coerceIn(-MAX_ANGLE, MAX_ANGLE)
         val angleRadians = Math.toRadians(angleDegrees.toDouble()).toFloat()
 
         val dx = GRAVITY * kotlin.math.sin(angleRadians) * deltaTime
         val dy = -GRAVITY * kotlin.math.cos(angleRadians) * deltaTime
 
-        val proposedX = gem.x + dx
-        val proposedY = gem.y + dy
+        var proposedX = gem.x + dx
+        var proposedY = gem.y + dy
 
+        // Clamp X position within the play area
         val minX = gameBoard.playAreaOffsetX
         val maxX = gameBoard.playAreaOffsetX + GameBoard.PLAY_AREA_WIDTH - GameBoard.GEM_SIZE
-        val clampedX = proposedX.coerceIn(minX, maxX)
+        proposedX = proposedX.coerceIn(minX, maxX)
 
-        // The landing y is at least the bottom of the play area.
+        // Check if the proposed position collides with any existing gems
+        val landedGems = gameObjects.getActiveGems().filter { !it.isMoving && it !== gem }
+
         var landingY = gameBoard.playAreaOffsetY
+        var collisionDetected = false
 
-        // Check for each landed (non-moving) gem that might be directly below.
-        gameObjects.getActiveGems().forEach { otherGem ->
-            if (otherGem !== gem && !otherGem.isMoving) {
-                // Check if the gems are horizontally overlapping.
-                if (abs(gem.x - otherGem.x) < GameBoard.GEM_SIZE * 0.9f) {
-                    // The candidate landing position is the top of the landed gem.
-                    val candidateY = otherGem.y + GameBoard.GEM_SIZE
-                    if (candidateY > landingY && candidateY <= gem.y) {
-                        landingY = candidateY
-                    }
+        for (otherGem in landedGems) {
+            // Check if there's an overlap in the X direction
+            if (abs(proposedX - otherGem.x) < GameBoard.GEM_SIZE * 0.9f) {
+                val candidateY = otherGem.y + GameBoard.GEM_SIZE
+                if (candidateY > landingY && candidateY <= gem.y) {
+                    landingY = candidateY
                 }
+            }
+
+            // Check for horizontal collisions to prevent phasing through
+            if (abs(proposedX - otherGem.x) < GameBoard.GEM_SIZE * 0.9f && abs(proposedY - otherGem.y) < GameBoard.GEM_SIZE) {
+                collisionDetected = true
             }
         }
 
-        // If the proposed y would be below or equal to the landing position, snap the gem to landingY.
         if (proposedY <= landingY) {
+            // The gem has landed
             gem.y = landingY
             gem.isMoving = false
             if (gameBoard.currentGem == gem) {
                 gameBoard.currentGem = null
             }
 
+            // Check if the game is over
             val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
             if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
                 gameBoard.isGameOver = true
-                // Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
             }
         } else {
-            // Otherwise, let the gem fall normally.
-            gem.x = clampedX
+            // Resolve lateral collisions by preventing movement into an occupied space
+            if (collisionDetected) {
+                proposedX = gem.x // Keep the X position the same if a collision is detected
+            }
+
+            gem.x = proposedX
             gem.y = proposedY
         }
     }
-
 
     // Spawn a new gem at the top of the screen
     private fun spawnGem() {

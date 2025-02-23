@@ -76,7 +76,7 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
                 var isEven = true
                 for ((index, entry) in leaderboardData.withIndex()) {
                     val entryLabel = Label("${index + 1}. ${entry.first} - ${entry.second}", labelStyle).apply {
-                        font.data.setScale(3f)
+                        font.data.setScale(2.5f)
                         }
 
                     // Alternate row colors (Red and Blue)
