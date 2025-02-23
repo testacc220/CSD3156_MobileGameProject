@@ -249,6 +249,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         )
         Log.d("hello", "adduser hash done")
         val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
         if (db == null) {
             Log.e("hello", "Firestore instance is null")
             return
