@@ -19,11 +19,16 @@ import com.badlogic.gdx.utils.GdxRuntimeException
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 import ktx.assets.disposeSafely
+//import com.google.firebase.firestore.FirebaseFirestore;
 
-class MainKt : Game() {
+class MainKt (private val androidLauncher: AndroidLauncherInterface): Game() {
     lateinit var camera: OrthographicCamera
     lateinit var viewport: Viewport
     lateinit var batch: SpriteBatch
+    lateinit var loginScreen: LoginScreen
+    lateinit var gameScene: GameScene
+    lateinit var mainMenu: MainMenu
+    lateinit var leadScreen: Leaderboard
 
     override fun create() {
         Gdx.app.log("CWD", "Current Working Directory: ${System.getProperty("user.dir")}")
@@ -40,8 +45,14 @@ class MainKt : Game() {
         // Initialize the SpriteBatch
         batch = SpriteBatch()
 
+        // Initialize screens
+        loginScreen = LoginScreen(this, androidLauncher)
+        gameScene = GameScene(this, androidLauncher)
+        mainMenu = MainMenu(this, androidLauncher)
+        leadScreen = Leaderboard(this, androidLauncher)
+
         // Transition directly to GameScene
-        setScreen(GameScene(this))
+        setScreen(loginScreen)
     }
 
     override fun dispose() {

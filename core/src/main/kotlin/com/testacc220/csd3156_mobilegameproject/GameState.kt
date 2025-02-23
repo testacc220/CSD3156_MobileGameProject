@@ -92,7 +92,7 @@ class GameState {
             val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
             if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
                 gameBoard.isGameOver = true
-                Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
+                // Gdx.app.log("GameState", "Game Over: Gem exceeded play area!")
             }
         } else {
             // Otherwise, let the gem fall normally.

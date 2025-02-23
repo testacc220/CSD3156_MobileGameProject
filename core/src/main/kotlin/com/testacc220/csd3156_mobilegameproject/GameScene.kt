@@ -36,7 +36,7 @@ class CrossPlatformFileHandleResolver : FileHandleResolver {
     }
 }
 
-class GameScene(private val game: MainKt) : KtxScreen {
+class GameScene(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val assetManager = AssetManager(CrossPlatformFileHandleResolver())
     private val shapeRenderer = ShapeRenderer()
     private val gameState = GameState()
@@ -100,46 +100,13 @@ class GameScene(private val game: MainKt) : KtxScreen {
         // Initialize UI components
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
-        gameLabel = Label("Score: 0", labelStyle)
+        gameLabel = Label("Score: 1", labelStyle)
         table.setFillParent(true)
         table.top().left().pad(20f)  // Align to the top-left with padding
         table.add(gameLabel)
 
         stage.addActor(table)
-
-        // Set up input handling
-        Gdx.input.inputProcessor = object : InputAdapter() {
-//            override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                lastTouchX = worldCoords.x
-//                lastTouchY = worldCoords.y
-//
-//                // Check if touch is in play area
-//                if (gameState.getGameBoard().isPositionInPlayArea(lastTouchX, lastTouchY)) {
-//                    isDragging = true
-//                    return true
-//                }
-//                return false
-//            }
-//
-//            override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
-//                if (isDragging) {
-//                    val worldCoords = stage.viewport.unproject(Vector2(screenX.toFloat(), screenY.toFloat()))
-//                    val currentGem = gameState.getGameBoard().currentGem
-//
-//                    if (currentGem != null && gameState.getGameBoard().isPositionInPlayArea(worldCoords.x, worldCoords.y)) {
-//                        currentGem.moveTo(worldCoords.x, worldCoords.y)
-//                        physicsEngine.updateGemPosition(currentGem.uid, worldCoords.x, worldCoords.y)
-//                    }
-//                }
-//                return true
-//            }
-//
-//            override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-//                isDragging = false
-//                return true
-//            }
-        }
+        Gdx.input.inputProcessor = stage
 
         // Initialize game state
         gameState.initialize(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -231,6 +198,11 @@ class GameScene(private val game: MainKt) : KtxScreen {
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
 
+        // Testing read from database haha
+//        androidLauncherInterface.readUsrDatabase { testScore ->
+////            Log.d("Hello", "Retrieved score: $testScore") // Debugging
+//            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
+//        }
         if (gameState.getGameBoard().isGameOver) {
             showGameOverUI()
         }
@@ -288,12 +260,14 @@ class GameScene(private val game: MainKt) : KtxScreen {
 
         playAgainButton.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
+                Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
                 restartGame()
             }
         })
 
         stage.addActor(gameOverLabel)
         stage.addActor(playAgainButton)
+
     }
 
     private fun restartGame() {
