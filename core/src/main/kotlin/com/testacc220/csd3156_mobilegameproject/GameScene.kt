@@ -164,9 +164,9 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
                 }
 
                 val tilePadding = 8f
-                batch.draw(tileTexture, gem.x - tilePadding / 2,
+                /*batch.draw(tileTexture, gem.x - tilePadding / 2,
                     gem.y - tilePadding / 2, gem.width + tilePadding,
-                    gem.height + tilePadding)
+                    gem.height + tilePadding)*/
 
                 val gemTexture = when (gem.tier) {
                     1 -> when (gem.type) {
