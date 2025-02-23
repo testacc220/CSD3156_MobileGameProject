@@ -22,6 +22,7 @@ import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.testacc220.csd3156_mobilegameproject.utils.SensorManager
 
 class CrossPlatformFileHandleResolver : FileHandleResolver {
     override fun resolve(fileName: String): FileHandle {
@@ -65,6 +66,8 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
         assetManager.finishLoading()
 
+        //test sensor
+        SensorManager.logSensorData()
         try {
             skin = assetManager.get("skins/expeeui/expee-ui.json", Skin::class.java)
             background = assetManager.get("parallax_forest_pack/layers/parallax-forest-back-trees.png", Texture::class.java)
@@ -135,14 +138,35 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val viewportWidth = stage.viewport.worldWidth
         val viewportHeight = stage.viewport.worldHeight
 
+        // Update rotation in SensorManager
+        SensorManager.updateRotation(delta)
+
         // Update game state and physics
         gameState.update(delta)
         physicsEngine.update(delta)
 
-        // Render background
+        // Render game with rotation
         game.batch.use { batch ->
+            // Draw background with rotation from SensorManager
             background?.let { bg ->
-                batch.draw(bg, 0f, 0f, viewportWidth, viewportHeight)
+                batch.draw(
+                    bg,
+                    0f,  // X position
+                    0f,  // Y position
+                    viewportWidth / 2,  // Origin X (center of rotation)
+                    viewportHeight / 2,  // Origin Y (center of rotation)
+                    viewportWidth,  // Width
+                    viewportHeight,  // Height
+                    1f,  // Scale X
+                    1f,  // Scale Y
+                    SensorManager.rotation,  // Rotation angle from SensorManager
+                    0,  // Source X
+                    0,  // Source Y
+                    bg.width,  // Source width
+                    bg.height,  // Source height
+                    false,  // Flip X
+                    false   // Flip Y
+                )
             }
         }
 
