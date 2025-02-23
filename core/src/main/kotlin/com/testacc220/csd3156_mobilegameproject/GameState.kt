@@ -63,8 +63,6 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             }
         }
 
-
-
         gameBoard.update(deltaTime)
 
         // Check for merges when board is stable
@@ -252,7 +250,13 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         val centerY = sumY / cluster.size
 
         // Remove all gems in the cluster.
-        cluster.forEach { gameObjects.removeGem(it) }
+        cluster.forEach { gem->
+            gameObjects.removeGem(gem)
+            if (gameBoard.currentGem == gem) {
+                // Clear currentGem if it's part of a merge
+                gameBoard.currentGem = null
+            }
+        }
         gameObjects.update(0f)
 
         // Upgrade tier by one
