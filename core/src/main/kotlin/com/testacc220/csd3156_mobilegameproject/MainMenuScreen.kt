@@ -77,7 +77,7 @@ class MainMenuScreen(private val game: MainKt, private val androidLauncherInterf
         leaderboardButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 // Navigate to leaderboard screen
-                // game.setScreen(LeaderboardScreen(game, androidLauncherInterface))
+                 game.setScreen(Leaderboard(game, androidLauncherInterface))
             }
         })
 
