@@ -19,7 +19,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     private var currentOrientation = Orientation.VERTICAL
 
     // Gravity in pixels per second.
-    private val GRAVITY = 500f
+    private val GRAVITY = 300
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
@@ -56,7 +56,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         }
 
         // Spawn a new gem every 1 second.
-        if (spawnTimer >= 1f && !isProcessingMerges) {
+        if (spawnTimer >= 3f && !isProcessingMerges) {
             spawnGem()
             spawnTimer = 0f
         }
