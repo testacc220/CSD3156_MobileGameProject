@@ -1,7 +1,6 @@
 
 package com.testacc220.csd3156_mobilegameproject
 
-
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -11,7 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import ktx.app.KtxScreen
+
 
 class LoginScreen(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val stage: Stage = Stage(ScreenViewport())
@@ -27,50 +31,61 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
     private val font = BitmapFont()
     private var isLoginMode = true
 
+    // Create custom drawables for UI elements
+    private fun createBackground(color: Color): TextureRegionDrawable {
+        val pixmap = Pixmap(1, 1, Pixmap.Format.RGBA8888)
+        pixmap.setColor(color)
+        pixmap.fill()
+        val texture = Texture(pixmap)
+        pixmap.dispose()
+        return TextureRegionDrawable(TextureRegion(texture))
+    }
+
     override fun show() {
         Gdx.input.inputProcessor = stage
 
+        // Scale the font
+        font.data.setScale(2.7f)
 
-        // Scale the font (increase or decrease this value to change font size)
-        font.data.setScale(4f)  // 2f means 2x the original size
+        // Create custom styles with backgrounds
+        val textFieldBackground = createBackground(Color(0.2f, 0.2f, 0.2f, 0.8f))
+        val buttonBackground = createBackground(Color(0.3f, 0.5f, 0.9f, 1f))
+        val buttonHoverBackground = createBackground(Color(0.4f, 0.6f, 1f, 1f))
 
-        // Create custom skin styles
         val textFieldStyle = TextField.TextFieldStyle().apply {
             font = this@LoginScreen.font
             fontColor = Color.WHITE
-            background = null
-            cursor = null
-            selection = null
+            background = textFieldBackground
+            cursor = textFieldBackground
+            selection = TextureRegionDrawable(TextureRegion(Texture(Pixmap(1, 1, Pixmap.Format.RGBA8888).apply {
+                setColor(Color(0.4f, 0.6f, 1f, 0.5f))
+                fill()
+            })))
         }
 
         val textButtonStyle = TextButton.TextButtonStyle().apply {
             font = this@LoginScreen.font
             fontColor = Color.WHITE
-            downFontColor = Color.LIGHT_GRAY
-        }
-
-        val selectedButtonStyle = TextButton.TextButtonStyle().apply {
-            font = this@LoginScreen.font
-            fontColor = Color.YELLOW
-            downFontColor = Color.LIGHT_GRAY
+            up = buttonBackground
+            over = buttonHoverBackground
+            down = createBackground(Color(0.2f, 0.4f, 0.8f, 1f))
         }
 
         val labelStyle = Label.LabelStyle(font, Color.WHITE)
-        val errorLabelStyle = Label.LabelStyle(font, Color.RED)
-
+        val errorLabelStyle = Label.LabelStyle(font, Color(1f, 0.3f, 0.3f, 1f))
 
         // Create UI elements
-
-        titleLabel = Label("Login", labelStyle)
-
+        titleLabel = Label("Welcome", labelStyle).apply {
+            setFontScale(1.5f)
+        }
 
         usernameField = TextField("", textFieldStyle).apply {
-            messageText = "Enter username"
+            messageText = "Username"
         }
 
         passwordField = TextField("", textFieldStyle).apply {
-            messageText = "Enter password"
-            isPasswordMode = true  // This will show dots instead of actual characters
+            messageText = "Password"
+            isPasswordMode = true
         }
 
         errorLabel = Label("", errorLabelStyle).apply {
@@ -78,16 +93,8 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
         }
 
         actionButton = TextButton("Login", textButtonStyle)
-        switchLoginButton = TextButton("Login", selectedButtonStyle)
+        switchLoginButton = TextButton("Login", textButtonStyle)
         switchRegisterButton = TextButton("Register", textButtonStyle)
-
-        /*loginButton = TextButton("Login", textButtonStyle).apply {
-            addListener(object : ChangeListener() {
-                override fun changed(event: ChangeEvent?, actor: Actor?) {
-                    handleLogin()
-                }
-            })
-        }*/
 
         // Set up mode switch listeners
         switchLoginButton.addListener(object : ChangeListener() {
@@ -108,103 +115,87 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
             }
         })
 
+        // Create a container for switch buttons
         val switchTable = Table().apply {
+            background = createBackground(Color(0.15f, 0.15f, 0.15f, 0.9f))
             defaults().pad(10f)
-            add(switchLoginButton).pad(0f, 50f, 0f, 50f).width(200f).height(50f)
-            add(switchRegisterButton).width(200f).height(50f)
+            add(switchLoginButton).width(200f).height(60f).padRight(20f)
+            add(switchRegisterButton).width(200f).height(60f)
         }
 
-        // Create and set up table
+        // Main table layout with proper spacing and styling
         table = Table().apply {
             setFillParent(true)
-            defaults().pad(20f)
+            defaults().pad(15f)
+            background = createBackground(Color(0.1f, 0.1f, 0.1f, 0.9f))
 
-            //add(Label("Login", labelStyle)).padBottom(40f).row()
-            add(switchTable).row()
-            add(titleLabel).padBottom(40f).row()
-            add(usernameField).width(600f).height(60f).row()
-            add(passwordField).width(600f).height(60f).row()
-            add(errorLabel).padBottom(20f).row()
-            add(actionButton).width(600f).height(60f).row()
+            add(titleLabel).padTop(50f).padBottom(30f).row()
+            add(switchTable).padBottom(40f).row()
+            add(usernameField).width(400f).height(60f).row()
+            add(passwordField).width(400f).height(60f).row()
+            add(errorLabel).padTop(10f).padBottom(20f).row()
+            add(actionButton).width(400f).height(60f).padBottom(50f).row()
         }
 
         stage.addActor(table)
     }
 
     private fun handleAction() {
-        val username = usernameField.text
-        val password = passwordField.text
-        var boolCheck = false
+        val username: String = usernameField.text
+        val password: String = passwordField.text
 
-        //androidLauncherInterface.readDatabase2()
         when {
             username.length < 3 -> showError("Username must be at least 3 characters")
             password.length < 6 -> showError("Password must be at least 6 characters")
-            //isLoginMode && !isValidCredentials(username, password) -> showError("Invalid username or password")
-            //isLoginMode && !isValidCredentials(username, password, onResult ) -> Unit
             !isLoginMode -> handleRegistration(username, password)
-        }
-        if (isLoginMode && username.length >= 3 && password.length >= 6) {
-            isValidCredentials(username, password) { isValid ->
-                if (!isValid) {
-                    //showError("Invalid username or password")
-                } else {
-                    showError(" ")
-                    game.setScreen(GameScene(game, androidLauncherInterface))
+            else -> {
+                if (username.length >= 3 && password.length >= 6) {
+                    isValidCredentials(username, password) { isValid ->
+                        if (isValid) {
+                            showError(" ")
+                            game.setScreen(GameScene(game, androidLauncherInterface))
+                        }
+                    }
                 }
             }
         }
-
-        //androidLauncherInterface.setUserDetails(username, password)
-
-
     }
 
     private fun handleRegistration(username: String, password: String) {
-        //val isAvailable = androidLauncherInterface.checkUserNameAvail(username)
-        androidLauncherInterface.checkUserNameAvailOLD(username) { availBool ->
-            /*if(availBool) // username is free
-            {
-                androidLauncherInterface.addUser(username, password)
-                //game.setScreen(GameScene(game, androidLauncherInterface))
-            }*/
+        androidLauncherInterface.checkUserNameAvailOLD(username) { availBool: Boolean ->
             Gdx.app.postRunnable {
-                if (availBool) { // username is free
+                if (availBool) {
                     androidLauncherInterface.addUser(username, password)
                     game.setScreen(GameScene(game, androidLauncherInterface))
-                } else // username is false
-                {
+                } else {
                     showError("Username is already in use")
-
-                    // Reset text fields
-                    //usernameField.setText("")
-                    //passwordField.setText("")
                 }
             }
         }
     }
 
     private fun isValidCredentials(username: String, password: String, onResult: (Boolean) -> Unit) {
-        androidLauncherInterface.checkUserDetails(username, password) { correctDetails ->
+        androidLauncherInterface.checkUserDetails(username, password) { correctDetails: Int ->
             Gdx.app.postRunnable {
-                if (correctDetails == 1) {
-                    onResult(true)
-                } else if (correctDetails == 2) {
-                    showError("Password is incorrect!")
-                    onResult(false)
-                } else if (correctDetails == 3) {
-                    showError("User does not exist!")
-                    onResult(false)
-                } else {
-                    showError("Network error, please restart your device!")
-                    onResult(false)
+                when (correctDetails) {
+                    1 -> {
+                        onResult(true)
+                    }
+                    2 -> {
+                        showError("Password is incorrect!")
+                        onResult(false)
+                    }
+                    3 -> {
+                        showError("User does not exist!")
+                        onResult(false)
+                    }
+                    else -> {
+                        showError("Network error, please restart your device!")
+                        onResult(false)
+                    }
                 }
-
             }
-            //showError("correctDetails is , $correctDetails")
         }
-        //showError("onResult is , $onResult")
-        onResult(false)
     }
 
 
@@ -213,34 +204,20 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
         titleLabel.setText(if (loginMode) "Login" else "Register")
         actionButton.setText(if (loginMode) "Login" else "Register")
 
-        // Update button styles
-        switchLoginButton.style = if (loginMode) {
-            TextButton.TextButtonStyle().apply {
-                font = this@LoginScreen.font
-                fontColor = Color.YELLOW
-                downFontColor = Color.LIGHT_GRAY
-            }
-        } else {
-            TextButton.TextButtonStyle().apply {
-                font = this@LoginScreen.font
-                fontColor = Color.WHITE
-                downFontColor = Color.LIGHT_GRAY
-            }
+        val loginButtonStyle = TextButton.TextButtonStyle().apply {
+            font = this@LoginScreen.font
+            fontColor = if (loginMode) Color.YELLOW else Color.WHITE
+            downFontColor = Color.LIGHT_GRAY
         }
 
-        switchRegisterButton.style = if (!loginMode) {
-            TextButton.TextButtonStyle().apply {
-                font = this@LoginScreen.font
-                fontColor = Color.YELLOW
-                downFontColor = Color.LIGHT_GRAY
-            }
-        } else {
-            TextButton.TextButtonStyle().apply {
-                font = this@LoginScreen.font
-                fontColor = Color.WHITE
-                downFontColor = Color.LIGHT_GRAY
-            }
+        val registerButtonStyle = TextButton.TextButtonStyle().apply {
+            font = this@LoginScreen.font
+            fontColor = if (!loginMode) Color.YELLOW else Color.WHITE
+            downFontColor = Color.LIGHT_GRAY
         }
+
+        switchLoginButton.style = loginButtonStyle
+        switchRegisterButton.style = registerButtonStyle
 
         hideError()
     }
@@ -255,7 +232,7 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
     }
 
     override fun render(delta: Float) {
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1f)
+        Gdx.gl.glClearColor(0.1f, 0.1f, 0.2f, 1f)  // Darker blue background
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         stage.act(delta)
