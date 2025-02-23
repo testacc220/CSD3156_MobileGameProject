@@ -153,7 +153,8 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
                     isValidCredentials(username, password) { isValid ->
                         if (isValid) {
                             showError(" ")
-                            game.setScreen(GameScene(game, androidLauncherInterface))
+                            // game.setScreen(GameScene(game, androidLauncherInterface))
+                            game.setScreen(MainMenuScreen(game, androidLauncherInterface))
                         }
                     }
                 }
@@ -166,7 +167,8 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
             Gdx.app.postRunnable {
                 if (availBool) {
                     androidLauncherInterface.addUser(username, password)
-                    game.setScreen(GameScene(game, androidLauncherInterface))
+                    // game.setScreen(GameScene(game, androidLauncherInterface))
+                    game.setScreen(MainMenuScreen(game, androidLauncherInterface))
                 } else {
                     showError("Username is already in use")
                 }
