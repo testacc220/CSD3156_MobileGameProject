@@ -6,7 +6,7 @@ interface AndroidLauncherInterface {
     fun checkUserNameAvailOLD(desiredUsername : String, callback: (Boolean) -> Unit)
     suspend fun checkUserNameAvail(desiredUsername: String): Boolean
     fun addUser(usrNameTmp : String, passWrdTmp : String)
-    fun checkUserDetails(getValUser: String, getValPw: String, callback: (Boolean) -> Unit)
+    fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit)
     fun readDatabase2()
 
     //fun readUsrDatabase(onResult: (Int) -> Unit)

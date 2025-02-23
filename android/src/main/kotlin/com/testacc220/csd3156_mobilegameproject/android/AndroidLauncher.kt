@@ -181,7 +181,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
     //override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Boolean) -> Unit)
 
-    override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Boolean) -> Unit)
+    override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit)
     {
        /* usrName = getValUser
         passWrd = getValPw*/
@@ -192,30 +192,30 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             .document(getValUser)
             .get()
             .addOnSuccessListener { document ->
-                if (document != null) { //username is found?
+                if (document.exists()) { //username is found?
                     val databaseSidePW = document.getString("password")
                     Log.d("Hello", "username2 is $getValUser")
                     Log.d("Hello", "password2 is $getValPw")
                     Log.d("Hello", "database password is $databaseSidePW")
-                    if(getValPw == databaseSidePW)
+                    if(getValPw == databaseSidePW) // if password of username match
                     {
-                        callback(true)
+                        callback(1)
                         Log.d("Hello", "callback true for checkuserdetails")
                     }
-                    else
+                    else // if password is wrong
                     {
-                        callback(false)
+                        callback(2)
                         Log.d("Hello", "callback false for checkuserdetails")
                     }
 
                 } else { //username not found
                     Log.d("Hello", "call")
-                    callback(false)
+                    callback(3)
                 }
             }
             .addOnFailureListener { exception ->
                 Log.d("Hello", "get for checksUserDetails failed with ", exception)
-                callback(false)
+                callback(4) //network connection error
             }
 
             /*.addOnSuccessListener { document ->

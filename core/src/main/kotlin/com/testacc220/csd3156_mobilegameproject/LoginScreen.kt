@@ -59,7 +59,6 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
         val errorLabelStyle = Label.LabelStyle(font, Color.RED)
 
 
-
         // Create UI elements
 
         titleLabel = Label("Login", labelStyle)
@@ -111,7 +110,7 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
 
         val switchTable = Table().apply {
             defaults().pad(10f)
-            add(switchLoginButton).pad(0f,50f,0f,50f).width(200f).height(50f)
+            add(switchLoginButton).pad(0f, 50f, 0f, 50f).width(200f).height(50f)
             add(switchRegisterButton).width(200f).height(50f)
         }
 
@@ -135,24 +134,35 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
     private fun handleAction() {
         val username = usernameField.text
         val password = passwordField.text
+        var boolCheck = false
 
         //androidLauncherInterface.readDatabase2()
-        when
-        {
+        when {
             username.length < 3 -> showError("Username must be at least 3 characters")
             password.length < 6 -> showError("Password must be at least 6 characters")
-            isLoginMode && !isValidCredentials(username, password) -> showError("Invalid username or password")
+            //isLoginMode && !isValidCredentials(username, password) -> showError("Invalid username or password")
+            //isLoginMode && !isValidCredentials(username, password, onResult ) -> Unit
             !isLoginMode -> handleRegistration(username, password)
+        }
+        if (isLoginMode && username.length >= 3 && password.length >= 6) {
+            isValidCredentials(username, password) { isValid ->
+                if (!isValid) {
+                    //showError("Invalid username or password")
+                } else {
+                    showError(" ")
+                    game.setScreen(GameScene(game, androidLauncherInterface))
+                }
+            }
         }
 
         //androidLauncherInterface.setUserDetails(username, password)
 
-        // Add your login logic here
+
     }
 
     private fun handleRegistration(username: String, password: String) {
         //val isAvailable = androidLauncherInterface.checkUserNameAvail(username)
-        androidLauncherInterface.checkUserNameAvailOLD(username) {availBool ->
+        androidLauncherInterface.checkUserNameAvailOLD(username) { availBool ->
             /*if(availBool) // username is free
             {
                 androidLauncherInterface.addUser(username, password)
@@ -174,22 +184,29 @@ class LoginScreen(private val game: MainKt, private val androidLauncherInterface
         }
     }
 
-    private fun isValidCredentials(username: String, password: String): Boolean {
+    private fun isValidCredentials(username: String, password: String, onResult: (Boolean) -> Unit) {
+        androidLauncherInterface.checkUserDetails(username, password) { correctDetails ->
+            Gdx.app.postRunnable {
+                if (correctDetails == 1) {
+                    onResult(true)
+                } else if (correctDetails == 2) {
+                    showError("Password is incorrect!")
+                    onResult(false)
+                } else if (correctDetails == 3) {
+                    showError("User does not exist!")
+                    onResult(false)
+                } else {
+                    showError("Network error, please restart your device!")
+                    onResult(false)
+                }
 
-        var isValidCreds = false
-        androidLauncherInterface.checkUserDetails(username, password){correctDetails ->
-            if(correctDetails)
-            {
-                isValidCreds = true
             }
-            else
-            {
-                isValidCreds =  false
-            }
+            //showError("correctDetails is , $correctDetails")
         }
-
-        return isValidCreds
+        //showError("onResult is , $onResult")
+        onResult(false)
     }
+
 
     private fun setLoginMode(loginMode: Boolean) {
         isLoginMode = loginMode
