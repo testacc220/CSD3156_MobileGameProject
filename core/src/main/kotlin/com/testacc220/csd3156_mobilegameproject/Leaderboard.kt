@@ -1,103 +1,64 @@
-
 package com.testacc220.csd3156_mobilegameproject
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.TextField
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import ktx.app.KtxScreen
 
 class Leaderboard(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val stage: Stage = Stage(ScreenViewport())
-    private lateinit var startButton: TextButton
-    private lateinit var ldboardButton: TextButton
-    private lateinit var table: Table
     private val skin = Skin()
     private val font = BitmapFont()
-    private val spriteBatch = SpriteBatch()
-    private val shapeRenderer = ShapeRenderer()
 
     override fun show() {
         Gdx.input.inputProcessor = stage
 
-        // Scale the font (increase or decrease this value to change font size)
-        font.data.setScale(2f)  // 2f means 2x the original size
+        // Scale font for readability
+        font.data.setScale(2f)
 
-        // Create custom skin styles
-        val textButtonStyle = TextButton.TextButtonStyle().apply {
+        val labelStyle = Label.LabelStyle().apply {
             font = this@Leaderboard.font
             fontColor = Color.WHITE
-            downFontColor = Color.LIGHT_GRAY
-            font.data.setScale(10f)
         }
 
-        val labelStyleA = Label.LabelStyle().apply {
-            font = this@Leaderboard.font
-            fontColor = Color.MAGENTA
-            font.data.setScale(5f)
-        }
+        val titleLabel = Label("Leaderboard", labelStyle)
 
-        // Create UI elements
-        startButton = TextButton("Start Game", textButtonStyle).apply {
-            addListener(object : ChangeListener() {
-                override fun changed(event: ChangeEvent?, actor: Actor?) {
-                    startGame()
-                }
-            })
-        }
+        // Dummy leaderboard data
+        val dummyScores = listOf(
+            "1. PlayerA - 10000",
+            "2. PlayerB - 9000",
+            "3. PlayerC - 8500",
+            "4. PlayerD - 8000",
+            "5. PlayerE - 7500",
+            "6. PlayerF - 7000",
+            "7. PlayerG - 6500",
+            "8. PlayerH - 6000",
+            "9. PlayerI - 5500",
+            "10. PlayerJ - 5000"
+        )
 
-        ldboardButton = TextButton("Leaderboard", textButtonStyle).apply {
-            addListener(object : ChangeListener() {
-                override fun changed(event: ChangeEvent?, actor: Actor?) {
-                    goLdboard()
-                }
-            })
-        }
-
-        // Create and set up table
-        table = Table().apply {
+        val table = Table().apply {
             setFillParent(true)
-            defaults().pad(20f)
+            add(titleLabel).padBottom(20f).row()
 
-            add(Label("Gem Smash", labelStyleA)).padBottom(100f).height(500f).row()  // Increased bottom padding
-            add(startButton).width(600f).height(80f).row()  // Increased width and height
-            add(ldboardButton).width(600f).height(80f).row()  // Increased width and height
+            for (entry in dummyScores) {
+                add(Label(entry, labelStyle)).padBottom(10f).row()
+            }
         }
 
         stage.addActor(table)
     }
 
-    private fun startGame() {
-        // Add your login logic here
-        game.setScreen(GameScene(game, androidLauncherInterface))
-    }
-
-    private fun goLdboard() {
-        // Add your login logic here
-        game.setScreen(GameScene(game, androidLauncherInterface))
-    }
-
     override fun render(delta: Float) {
-        // Clear screen
-        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1f)
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
-        // Draw gradient background
-        drawGradientBackground()
-
-        // Render the UI elements
         stage.act(delta)
         stage.draw()
     }
@@ -110,18 +71,5 @@ class Leaderboard(private val game: MainKt, private val androidLauncherInterface
         stage.dispose()
         skin.dispose()
         font.dispose()
-        spriteBatch.dispose()
-        shapeRenderer.dispose()
     }
-
-    private fun drawGradientBackground() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-
-        // Set up gradient colors (light blue)
-        shapeRenderer.setColor(Color(0.5f, 0.8f, 1f, 1f))  // Light Blue
-        shapeRenderer.rect(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())  // Full screen fill
-        shapeRenderer.end()
-    }
-
-
 }

@@ -81,7 +81,6 @@ class MainMenu(private val game: MainKt, private val androidLauncherInterface: A
 
     private fun startGame() {
 //        game.setScreen(GameScene(game, androidLauncherInterface))
-        androidLauncherInterface.getTopTenHs{}
     }
 
     private fun goLdboard() {

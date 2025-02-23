@@ -239,29 +239,28 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
         val db = FirebaseFirestore.getInstance()
 
-        // retrieve top 10 scores
         db.collection("PlayerData")
             .orderBy("highscore", Query.Direction.DESCENDING)
             .limit(10)
             .get()
             .addOnSuccessListener { querySnap ->
                 val retHs = querySnap.documents.mapNotNull { document ->
-                    val username = document.getString("username")
-                    val hs = document.getLong("highscore")?.toInt()
-                    if (username != null && hs != null) {
-                        Log.w("Hello", "managed to read value: $username w score $hs " )
-                        Pair(username, hs)
-                    } else {
-                        // skip invalid, req for mapNotNull
-                        null
-                    }
+                    val username = document.id.takeIf { it.isNotBlank() } ?: "Unknown"
+                    val hs = document.getLong("highscore")?.toInt() ?: 0
+
+                    Log.w("Hello", "Fetched: $username - Score: $hs")
+
+                    Pair(username, hs)
                 }
-                onResult(retHs) // Return the top scores via the callback
+                Log.d("Hello", "Total leaderboard entries: ${retHs.size}")
+                onResult(retHs)
             }
-            .addOnFailureListener {
-                onResult(emptyList()) // Return empty list on failure
+            .addOnFailureListener { e ->
+                Log.e("Hello", "Firebase query failed", e)
+                onResult(emptyList())  // Return empty list on failure
             }
     }
+
 }
 
 /*fun addUser() {
