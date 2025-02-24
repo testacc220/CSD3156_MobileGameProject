@@ -15,7 +15,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import ktx.app.KtxScreen
 
-
 class RoomScreen(private val game: MainKt, private val androidLauncherInterface: AndroidLauncherInterface) : KtxScreen {
     private val stage: Stage = Stage(ScreenViewport())
     private lateinit var roomField: TextField
@@ -24,6 +23,7 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
     private lateinit var titleLabel: Label
     private lateinit var switchHostButton: TextButton
     private lateinit var switchJoinButton: TextButton
+    private lateinit var backButton: TextButton
     private lateinit var table: Table
     private val skin = Skin()
     private val font = BitmapFont()
@@ -43,6 +43,10 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
     private val userFoundLabel = Label("Opponent...FOUND!! PREP TO SMASH", labelStyle).apply {
         font.data.setScale(5f)
         setColor(Color.WHITE)
+    }
+    private val roomCodeDisplayLabel = Label("", labelStyle).apply {
+        font.data.setScale(3f)
+        setColor(Color.YELLOW)
     }
 
     // Create custom drawables for UI elements
@@ -104,6 +108,7 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
         actionButton = TextButton("Create", textButtonStyle)
         switchHostButton = TextButton("Host", textButtonStyle)
         switchJoinButton = TextButton("Join", textButtonStyle)
+        backButton = TextButton("Back to Menu", textButtonStyle)
 
         // Set up mode switch listeners
         switchHostButton.addListener(object : ChangeListener() {
@@ -121,6 +126,12 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
         actionButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 handleAction()
+            }
+        })
+
+        backButton.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                game.setScreen(MainMenuScreen(game, androidLauncherInterface))
             }
         })
 
@@ -142,7 +153,9 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
             add(switchTable).padBottom(40f).row()
             add(roomField).width(400f).height(60f).row()
             add(errorLabel).padTop(10f).padBottom(20f).row()
-            add(actionButton).width(400f).height(60f).padBottom(50f).row()
+            add(roomCodeDisplayLabel).padTop(10f).padBottom(20f).row()
+            add(actionButton).width(400f).height(60f).padBottom(30f).row()
+            add(backButton).width(400f).height(60f).padBottom(50f).row()
         }
 
         stage.addActor(table)
@@ -152,28 +165,57 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
         val roomName: String = roomField.text
 
         when {
+            roomName.isEmpty() && isHostMode -> {
+                // Generate a random room code if user didn't provide one in host mode
+                val generatedRoomCode = generateRoomCode()
+                roomField.text = generatedRoomCode
+                createRoom(generatedRoomCode)
+            }
             roomName.length < 3 -> showError("Room ID must be at least 3 characters")
-            //  to be replaced w create room function
-            !isHostMode -> handleRegistration(roomName)
-        }
-        if (isHostMode && roomName.length >= 3) {
-            showError(" ")
-            // to be replaced w join room function
-            androidLauncherInterface.createRoom(roomName)
-            table.clearChildren()
-            table.add(loadingLabel).padBottom(30f).colspan(2).center().row()
+            isHostMode -> createRoom(roomName)
+            !isHostMode -> joinRoom(roomName)
         }
     }
 
-    private fun handleRegistration(roomName: String) {
+    private fun createRoom(roomName: String) {
+        showError(" ")
+        androidLauncherInterface.createRoom(roomName)
+
+        // Update UI to show waiting state
         table.clearChildren()
-        table.add(searchRoomLabel).padBottom(30f).colspan(2).center().row()
+        table.add(titleLabel).padTop(50f).padBottom(30f).row()
+        table.add(roomCodeDisplayLabel.apply { setText("Room Code: $roomName") }).padBottom(30f).row()
+        table.add(loadingLabel).padBottom(30f).row()
+        table.add(backButton).width(400f).height(60f).padBottom(50f).row()
+
+        // Listen for player2 joining
+        androidLauncherInterface.listenForPlayerJoin(roomName) {
+            Gdx.app.postRunnable {
+                // Set multiplayer flag to true
+                androidLauncherInterface.setMultiplayerTrue()
+                game.setScreen(GameScene(game, androidLauncherInterface))
+            }
+        }
+    }
+
+    private fun joinRoom(roomName: String) {
+        table.clearChildren()
+        table.add(titleLabel).padTop(50f).padBottom(30f).row()
+        table.add(searchRoomLabel).padBottom(30f).row()
+        table.add(backButton).width(200f).height(60f).padBottom(50f).row()
 
         androidLauncherInterface.checkRoomAvail(roomName) { availBool: Boolean ->
             Gdx.app.postRunnable {
                 if (availBool) {
                     androidLauncherInterface.joinRoom(roomName)
-                    game.setScreen(GameScene(game, androidLauncherInterface))
+                    table.clearChildren()
+                    table.add(titleLabel).padTop(50f).padBottom(30f).row()
+                    table.add(userFoundLabel).padBottom(30f).row()
+
+                    // Small delay before transitioning to game scene
+                    Gdx.app.postRunnable {
+                        game.setScreen(GameScene(game, androidLauncherInterface))
+                    }
                 } else {
                     val switchTable = Table().apply {
                         background = createBackground(Color(0.15f, 0.15f, 0.15f, 0.9f))
@@ -181,61 +223,51 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
                         add(switchHostButton).width(200f).height(60f).padRight(20f)
                         add(switchJoinButton).width(200f).height(60f)
                     }
+
                     table.clearChildren()
                     table.add(titleLabel).padTop(50f).padBottom(30f).row()
                     table.add(switchTable).padBottom(40f).row()
                     table.add(roomField).width(400f).height(60f).row()
                     table.add(errorLabel).padTop(10f).padBottom(20f).row()
-                    table.add(actionButton).width(400f).height(60f).padBottom(50f).row()
+                    table.add(roomCodeDisplayLabel).padTop(10f).padBottom(20f).row()
+                    table.add(actionButton).width(400f).height(60f).padBottom(30f).row()
+                    table.add(backButton).width(200f).height(60f).padBottom(50f).row()
+
                     showError("Room does not exist")
                 }
             }
         }
-//        androidLauncherInterface.joinRoom(roomName){roomFound : Boolean ->
-//            Gdx.app.postRunnable {
-//                if(roomFound){
-//                    table.clearChildren()
-//                    table.add(userFoundLabel)
-//                }else{
-//                    table.clearChildren()
-//                    val switchTable = Table().apply {
-//                        background = createBackground(Color(0.15f, 0.15f, 0.15f, 0.9f))
-//                        defaults().pad(10f)
-//                        add(switchHostButton).width(200f).height(60f).padRight(20f)
-//                        add(switchJoinButton).width(200f).height(60f)
-//                    }
-//                    table = Table().apply {
-//                        setFillParent(true)
-//                        defaults().pad(15f)
-//                        background = createBackground(Color(0.1f, 0.1f, 0.1f, 0.9f))
-//
-//                        add(titleLabel).padTop(50f).padBottom(30f).row()
-//                        add(switchTable).padBottom(40f).row()
-//                        add(roomField).width(400f).height(60f).row()
-//                        add(errorLabel).padTop(10f).padBottom(20f).row()
-//                        add(actionButton).width(400f).height(60f).padBottom(50f).row()
-//                    }
-//                    showError("No room found")
-//                }
-//            }
-//        }
+    }
+
+    private fun generateRoomCode(): String {
+        // Generate a 6-character alphanumeric room code
+        val allowedChars = ('A'..'Z') + ('0'..'9')
+        return (1..6).map { allowedChars.random() }.joinToString("")
     }
 
     private fun setHostMode(inputHostMode: Boolean) {
         isHostMode = inputHostMode
         titleLabel.setText(if (inputHostMode) "Host game" else "Join game")
         actionButton.setText(if (inputHostMode) "Host" else "Join")
+        roomField.messageText = if (inputHostMode) "Room ID (optional)" else "Enter Room ID"
 
+        // Update button highlighting
         val loginButtonStyle = TextButton.TextButtonStyle().apply {
             font = this@RoomScreen.font
             fontColor = if (inputHostMode) Color.YELLOW else Color.WHITE
             downFontColor = Color.LIGHT_GRAY
+            up = createBackground(Color(0.3f, 0.5f, 0.9f, 1f))
+            over = createBackground(Color(0.4f, 0.6f, 1f, 1f))
+            down = createBackground(Color(0.2f, 0.4f, 0.8f, 1f))
         }
 
         val registerButtonStyle = TextButton.TextButtonStyle().apply {
             font = this@RoomScreen.font
             fontColor = if (!inputHostMode) Color.YELLOW else Color.WHITE
             downFontColor = Color.LIGHT_GRAY
+            up = createBackground(Color(0.3f, 0.5f, 0.9f, 1f))
+            over = createBackground(Color(0.4f, 0.6f, 1f, 1f))
+            down = createBackground(Color(0.2f, 0.4f, 0.8f, 1f))
         }
 
         switchHostButton.style = loginButtonStyle
@@ -271,4 +303,3 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
         font.dispose()
     }
 }
-

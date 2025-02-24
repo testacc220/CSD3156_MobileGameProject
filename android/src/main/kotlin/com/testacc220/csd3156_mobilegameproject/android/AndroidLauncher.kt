@@ -365,6 +365,26 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
+    override fun listenForPlayerJoin(roomId: String, onPlayerJoined: () -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val roomRef = db.collection("RoomData").document(roomId)
+
+        roomRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("Explo", "Error listening for room updates", error)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null && snapshot.exists()) {
+                val player2 = snapshot.getString("player2") ?: ""
+                if (player2.isNotEmpty()) {
+                    onPlayerJoined()
+                }
+            }
+        }
+    }
+
+
     override fun compareHighscore(inputScore : Int): Boolean
     {
         if(inputScore > lastHighscore) {

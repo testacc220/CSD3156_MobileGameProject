@@ -12,6 +12,7 @@ interface AndroidLauncherInterface {
     fun joinRoom(inRoomName : String)
     fun checkRoomAvail(inRoomName : String, callback: (Boolean) -> Unit)
 
+    fun listenForPlayerJoin(roomId: String, onPlayerJoined: () -> Unit)
     fun setMultiplayerTrue()
     fun getMultipFlag(): Boolean
     fun getOpponentScore(callback: (Int) -> Unit)
