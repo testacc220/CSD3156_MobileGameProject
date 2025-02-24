@@ -27,6 +27,8 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     // Timer to spawn gems every 1 second.
     private var spawnTimer = 0f
 
+    private var prevScore = getScore()
+
     /**
      * Initializes the game state with screen dimensions
      *
@@ -79,6 +81,22 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         if (gameBoard.currentGem == null && !isProcessingMerges) {
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
+            //gameBoard.score++ for testing
+            if(androidLauncherInterface.getMultipFlag())
+            {
+                androidLauncherInterface.getOpponentScore {oppScore : Int ->
+                    Gdx.app.postRunnable {
+                        gameBoard.multiplayerScore = oppScore
+                    } }
+            }
+
+
+            if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
+            {
+                androidLauncherInterface.updateOwnScore(gameBoard.score)
+                prevScore = gameBoard.score
+            }
+
 
         }
     }
@@ -177,6 +195,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         )
         gameBoard.currentGem = newGem
         gameObjects.addGem(newGem)
+        //gameBoard.score++ //for testing
     }
 
     // Check for potential merges based on proximity
@@ -296,10 +315,14 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     fun resetGame() {
         gameBoard.isGameOver = false
         gameBoard.score = 0
+        gameBoard.multiplayerScore = 0
         gameObjects.clearAllGems()
         spawnTimer = 0f
+        gameBoard.currentGem = null
         Gdx.app.log("GameState", "Game Reset! All gems cleared.")
     }
+
+
 
     // Change game orientation
     fun changeOrientation(newOrientation: Orientation) {
@@ -312,4 +335,5 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     fun getGameObjects() = gameObjects
     fun getCurrentOrientation() = currentOrientation
     fun getScore() = gameBoard.score
+    fun getMultiplayerScore() = gameBoard.multiplayerScore
 }

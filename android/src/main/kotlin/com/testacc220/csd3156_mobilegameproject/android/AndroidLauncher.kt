@@ -23,6 +23,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     public var lastHighscore = 0
     public var currUsrname = ""
     public var currRoom = ""
+    public var multiplayFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -47,29 +48,29 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     //val db = FirebaseFirestore.getInstance()
 
     fun addUserOld() {
-    //Log.d("sdsds", "DocumentSnapshot entered")
-    //Log.d("sdsds", "instance added ok")
-    val testData = hashMapOf(
-        "highscore" to 24211,
-        "password" to "123456",
-        "username" to "nomatter",
-    )
-    //Log.d("sdsds", "hashmap added ok")
+        //Log.d("sdsds", "DocumentSnapshot entered")
+        //Log.d("sdsds", "instance added ok")
+        val testData = hashMapOf(
+            "highscore" to 24211,
+            "password" to "123456",
+            "username" to "nomatter",
+        )
+        //Log.d("sdsds", "hashmap added ok")
         val db = FirebaseFirestore.getInstance()
-       db.clearPersistence()
-    db.collection("PlayerData").document("yqtest").set(testData)
-    //db.collection("PlayerData").add(testData)
-        .addOnSuccessListener {
-            Log.d("Hello", "DocumentSnapshot added ok")
-        }
-        .addOnFailureListener {
-            Log.d("Hello", "DocumentSnapshot failed ok")
-        }
+        db.clearPersistence()
+        db.collection("PlayerData").document("yqtest").set(testData)
+            //db.collection("PlayerData").add(testData)
+            .addOnSuccessListener {
+                Log.d("Hello", "DocumentSnapshot added ok")
+            }
+            .addOnFailureListener {
+                Log.d("Hello", "DocumentSnapshot failed ok")
+            }
 
-}
+    }
 
 
-    override fun readDatabase2(){
+    override fun readDatabase2() {
         //Log.d("sdsds", "DocumentSnapshot entered")
         val db = FirebaseFirestore.getInstance()
         val usrName = "tester"
@@ -83,7 +84,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             .get()
             .addOnSuccessListener { document ->
                 if (document != null) {
-                    hs = document.getLong("highscore")?.toInt()?:0
+                    hs = document.getLong("highscore")?.toInt() ?: 0
                     Log.d("Hello", "DocumentSnapshot data: $hs")
                 } else {
                     Log.d("Hello", "No such document")
@@ -96,7 +97,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         // [END get_document]
     }
 
-/*    override fun readUsrDatabase(onResult: (Int) -> Unit) {
+    /*    override fun readUsrDatabase(onResult: (Int) -> Unit) {
 
         //usrName = "PukiMan2"
 
@@ -148,8 +149,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }
     }
 
-    override fun checkUserNameAvailOLD(desiredUsername : String, callback: (Boolean) -> Unit)
-    {
+    override fun checkUserNameAvailOLD(desiredUsername: String, callback: (Boolean) -> Unit) {
         Log.d("Hello", "checkUserNameAvail")
         Log.d("Hello", "desiredUsername is, $desiredUsername")
         val db = FirebaseFirestore.getInstance()
@@ -183,9 +183,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
     //override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Boolean) -> Unit)
 
-    override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit)
-    {
-       /* usrName = getValUser
+    override fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit) {
+        /* usrName = getValUser
         passWrd = getValPw*/
         Log.d("Hello", "username1 is $getValUser")
         Log.d("Hello", "password1 is $getValPw")
@@ -199,14 +198,13 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                     Log.d("Hello", "username2 is $getValUser")
                     Log.d("Hello", "password2 is $getValPw")
                     Log.d("Hello", "database password is $databaseSidePW")
-                    if(getValPw == databaseSidePW) // if password of username match
+                    if (getValPw == databaseSidePW) // if password of username match
                     {
                         callback(1)
                         currUsrname = getValUser
                         lastHighscore = document.getLong("highscore")?.toInt() ?: 0
                         Log.d("Hello", "callback true for checkuserdetails")
-                    }
-                    else // if password is wrong
+                    } else // if password is wrong
                     {
                         callback(2)
                         Log.d("Hello", "callback false for checkuserdetails")
@@ -222,7 +220,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 callback(4) //network connection error
             }
 
-            /*.addOnSuccessListener { document ->
+        /*.addOnSuccessListener { document ->
                 if (document != null) {
                     var hs = document.getLong("password")?.toInt()?:0
                     Log.d("Hello", "DocumentSnapshot data: $hs")
@@ -235,7 +233,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }*/
     }
 
-    override fun addUser(usrNameTmp : String, passWrdTmp : String) {
+    override fun addUser(usrNameTmp: String, passWrdTmp: String) {
         Log.d("hello", "adduser")
         Log.d("hello", "adduser user is, $usrNameTmp")
         Log.d("hello", "adduser pw is, $passWrdTmp")
@@ -274,10 +272,9 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
-    override fun updateHighscore(newHighscore : Int)
-    {
+    override fun updateHighscore(newHighscore: Int) {
         val db = FirebaseFirestore.getInstance()
-
+        db.clearPersistence()
 //        val newScoreData = hashMapOf(
 //            "password" to "testoo",
 //            "highscore" to 1232)
@@ -290,15 +287,15 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             .addOnFailureListener { e -> Log.w("ouch", "Error writing document", e) }
     }
 
-    override fun createRoom(inRoomName : String)
-    {
+    override fun createRoom(inRoomName: String) {
         // Validate input
         if (inRoomName.isNullOrEmpty()) {
             Log.e("hello", "room name is empty !! the heck")
             return
         }
         val roomData = hashMapOf(
-            "player1" to currUsrname
+            "player1" to currUsrname,
+            "player1score" to 0
         )
         val db = FirebaseFirestore.getInstance()
         db.clearPersistence()
@@ -321,29 +318,31 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
-    override fun joinRoom(inRoomName : String)
-    {
+    override fun joinRoom(inRoomName: String) {
+        Log.d("hello", "joining room")
         val db = FirebaseFirestore.getInstance()
         db.clearPersistence()
-
+        Log.d("hello", "joining room 2")
         db.collection("RoomData")
             .document(inRoomName)
-            .update("player2", "pukiman")
+            //.update("player2", currUsrname)
+            .update(mapOf("player2" to currUsrname, "player2score" to 0))
 //            .set(newScoreData)
             .addOnSuccessListener {
                 currRoom = inRoomName
                 multiplayFlag = true
-                Log.d("ouch", "DocumentSnapshot successfully written! $multiplayFlag")
+                Log.d("hello", "DocumentSnapshot successfully written! $multiplayFlag")
             }
             .addOnFailureListener { e ->
-                Log.w("ouch", "Error writing document", e)
+                Log.w("hello", "Error writing document", e)
             }
+        Log.d("hello", "joining room finale")
     }
 
-    override fun checkRoomAvail(inRoomName : String, callback: (Boolean) -> Unit)
-    {
+    override fun checkRoomAvail(inRoomName: String, callback: (Boolean) -> Unit) {
         Log.d("Explo", "desired room name is, $inRoomName")
         val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
         db.collection("RoomData")
             .document(inRoomName)
             .get()
@@ -396,7 +395,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
     override fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit) {
         val db = FirebaseFirestore.getInstance()
-
+        db.clearPersistence()
         // Remove the clearPersistence call
         db.collection("PlayerData")
             .orderBy("highscore", Query.Direction.DESCENDING)
@@ -431,59 +430,81 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
-    override fun setMultiplayerTrue()
-    {
+    override fun setMultiplayerTrue() {
         multiplayFlag = !multiplayFlag
     }
 
-    override fun getMultipFlag():Boolean
-    {
+    override fun getMultipFlag(): Boolean {
         return multiplayFlag
     }
 
-    override fun getOpponentScore(callback: (Int) -> Unit)
-    {
+    override fun getOpponentScore(callback: (Int) -> Unit) {
         val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
         db.collection("RoomData")
             .document(currRoom)
             .get()
             .addOnSuccessListener { document ->
                 if (document.exists()) { //username is found?
-                    val roomHost = document.getString("player2")
-//                    val databaseSidePW = document.getString("password")
-//                    Log.d("Hello", "username2 is $getValUser")
-//                    Log.d("Hello", "password2 is $getValPw")
-//                    Log.d("Hello", "database password is $databaseSidePW")
-//                    if(getValPw == databaseSidePW) // if password of username match
-//                    {
-//                        callback(1)
-//                        currUsrname = getValUser
-//                        lastHighscore = document.getLong("highscore")?.toInt() ?: 0
-//                        Log.d("Hello", "callback true for checkuserdetails")
-//                    }
-//                    else // if password is wrong
-//                    {
-//                        callback(2)
-//                        Log.d("Hello", "callback false for checkuserdetails")
-//                    }
+                    if (currUsrname == document.getString("player1")) {
+                        document.getLong("player2score")?.let { callback(it.toInt()) }
+                        val player2Name = document.getString("player2")
+                        Log.d("Hello", "opponent is $player2Name")
+                    } else {
+                        document.getLong("player1score")?.let { callback(it.toInt()) }
+                        val player1Name = document.getString("player1")
+                        Log.d("Hello", "opponent is $player1Name")
+                    }
 
                 } else { //username not found
                     Log.d("Hello", "Room not found")
-                    callback(3)
+                    callback(0)
                 }
             }
             .addOnFailureListener { exception ->
-                Log.d("Hello", "get for checksUserDetails failed with ", exception)
-                callback(4) //network connection error
+                Log.d("Hello", "get for getOpponentScore failed with ", exception)
+                callback(0) //network connection error
             }
     }
 
-    override fun updateOwnScore(ownScore : Int)
-    {
+    override fun updateOwnScore(ownScore: Int) {
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+        val roomRef = db.collection("RoomData").document(currRoom)
+        roomRef.get().addOnSuccessListener { document ->
+            if (document.exists()) { // Check if the document exists
+                val player1 = document.getString("player1")
+                val player2 = document.getString("player2")
 
+                if (currUsrname == player1) {
+                    // Update the document using the DocumentReference
+                    roomRef.update("player1score", ownScore)
+                        .addOnSuccessListener {
+                            Log.d("Hello", "own score updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Hello", "Error updating document", e)
+                        }
+                } else {
+                    // Update the document using the DocumentReference
+                    roomRef.update("player2score", ownScore)
+                        .addOnSuccessListener {
+                            Log.d("Hello", "own score updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Hello", "Error updating document", e)
+                        }
+                }
+            } else {
+                Log.d("Hello", "Document does not exist")
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Hello", "Error fetching document", e)
+        }
     }
-    private var multiplayFlag = false
+
 }
+
 
 /*fun addUser() {
     //Log.d("sdsds", "DocumentSnapshot entered")

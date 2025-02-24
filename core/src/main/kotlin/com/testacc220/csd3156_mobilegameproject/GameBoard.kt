@@ -22,6 +22,7 @@ class GameBoard {
 
     // Game state variables
     var score: Int = 0
+    var multiplayerScore: Int = 0
     var isGameOver: Boolean = false
 
     // Screen layout properties
