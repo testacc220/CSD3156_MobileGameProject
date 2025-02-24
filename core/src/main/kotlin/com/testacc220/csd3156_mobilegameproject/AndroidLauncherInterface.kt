@@ -9,6 +9,7 @@ interface AndroidLauncherInterface {
     fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit)
     fun readDatabase2()
     fun createRoom(inRoomName : String)
+    fun checkRoomExistBefCreate(inRoomName : String, callback: (Boolean) -> Unit)
     fun deletRoom()
     fun joinRoom(inRoomName : String)
     fun checkRoomAvail(inRoomName : String, callback: (Boolean) -> Unit)
