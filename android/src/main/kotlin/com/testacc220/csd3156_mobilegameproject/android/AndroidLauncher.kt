@@ -318,6 +318,22 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
+    override fun deletRoom()
+    {
+        if(currRoom == "")
+            return
+        val db = FirebaseFirestore.getInstance()
+
+        db.collection("RoomData").document(currRoom)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("hello", "Room $currRoom deleted successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e("hello", "Error deleting room $currRoom", e)
+            }
+    }
+
     override fun joinRoom(inRoomName: String) {
         Log.d("hello", "joining room")
         val db = FirebaseFirestore.getInstance()
