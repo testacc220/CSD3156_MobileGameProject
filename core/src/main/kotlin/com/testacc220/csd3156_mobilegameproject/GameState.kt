@@ -79,7 +79,6 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         if (gameBoard.currentGem == null && !isProcessingMerges) {
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
-
         }
     }
 
@@ -298,6 +297,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         gameBoard.score = 0
         gameObjects.clearAllGems()
         spawnTimer = 0f
+        gameBoard.currentGem = null
         Gdx.app.log("GameState", "Game Reset! All gems cleared.")
     }
 

@@ -282,15 +282,22 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
     private fun restartGame() {
         gameState.resetGame()
-        table.clearChildren()
+//        table.clearChildren()
         stage.clear()  // Clear all UI elements including "Game Over" text
-        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
-        labelStyle.font.data.setScale(7f)
-        gameLabel = Label("Score: 0", labelStyle)
-        table.setFillParent(true)
-        table.top().left().pad(20f)
-        table.add(gameLabel)
+//        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+//        labelStyle.font.data.setScale(7f)
+//        gameLabel = Label("Score: 1", labelStyle)
+//        table.setFillParent(true)
+//        table.top().left().pad(20f)  // Align to the top-left with padding
+//        table.add(gameLabel)
         stage.addActor(table)
+        //        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+//        labelStyle.font.data.setScale(7f)
+//        gameLabel = Label("Score: 0", labelStyle)
+//        table.setFillParent(true)
+//        table.top().left().pad(20f)
+//        table.add(gameLabel)
+//        stage.addActor(table)
         Gdx.app.log("GameScene", "Game Restarted!")
     }
 
