@@ -55,15 +55,23 @@ class MainMenuScreen(private val game: MainKt, private val androidLauncherInterf
         }
 
         // Create menu buttons
-        val playButton = TextButton("Play Game", textButtonStyle)
+        //val playButton = TextButton("Play Game", textButtonStyle)
+        val singleplayerButton = TextButton("Singleplayer", textButtonStyle)
+        val multiplayerButton = TextButton("Multiplayer", textButtonStyle)
         val howToPlayButton = TextButton("How to Play", textButtonStyle)
         val leaderboardButton = TextButton("Leaderboard", textButtonStyle)
         val logoutButton = TextButton("Logout", textButtonStyle)
 
         // Add button listeners
-        playButton.addListener(object : ChangeListener() {
+        singleplayerButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 game.setScreen(GameScene(game, androidLauncherInterface))
+            }
+        })
+
+        multiplayerButton.addListener(object : ChangeListener() {
+            override fun changed(event: ChangeEvent?, actor: Actor?) {
+                game.setScreen(RoomScreen(game, androidLauncherInterface))
             }
         })
 
@@ -96,7 +104,8 @@ class MainMenuScreen(private val game: MainKt, private val androidLauncherInterf
             add(titleLabel).padBottom(50f).row()
 
             // Add buttons with consistent sizing and blue background
-            add(playButton).width(400f).height(60f).padBottom(20f).row()
+            add(singleplayerButton).width(400f).height(60f).padBottom(20f).row()
+            add(multiplayerButton).width(400f).height(60f).padBottom(20f).row()
             add(howToPlayButton).width(400f).height(60f).padBottom(20f).row()
             add(leaderboardButton).width(400f).height(60f).padBottom(20f).row()
             add(logoutButton).width(400f).height(60f).padBottom(20f).row()

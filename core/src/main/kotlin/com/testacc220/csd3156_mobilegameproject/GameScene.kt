@@ -212,6 +212,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
+        gameLabelOpponent.setText("Score: ${gameState.getMultiplayerScore()}")
 
         // Testing read from database haha
 //        androidLauncherInterface.readUsrDatabase { testScore ->
@@ -275,7 +276,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         )
 
         val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
-        val playAgainButton = TextButton("Play Again", buttonStyle)
+        val playAgainButton = TextButton("Return to Main Menu", buttonStyle)
 
         playAgainButton.setSize(500f, 120f)
         playAgainButton.setPosition(
@@ -286,7 +287,8 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         playAgainButton.addListener(object : ClickListener() {
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
-                restartGame()
+                //restartGame()
+                game.setScreen(MainMenuScreen(game, androidLauncherInterface))
             }
         })
 
@@ -301,7 +303,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         stage.clear()  // Clear all UI elements including "Game Over" text
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
-        gameLabel = Label("Score: 0", labelStyle)
+        gameLabel = Label("Score: 10", labelStyle)
 //        gameLabelOpponent = Label("Score: 0", labelStyle)
 //        if(androidLauncherInterface.getMultipFlag()) {
 //            gameLabelOpponent.isVisible = true
