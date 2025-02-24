@@ -481,6 +481,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     }
 
     override fun getMultipFlag(): Boolean {
+        Log.d("Hello", "multiplayFlag is $multiplayFlag")
         return multiplayFlag
     }
 
