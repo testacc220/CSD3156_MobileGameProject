@@ -81,7 +81,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         if (gameBoard.currentGem == null && !isProcessingMerges) {
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
-            gameBoard.score++
+            //gameBoard.score++ for testing
             androidLauncherInterface.getOpponentScore {oppScore : Int ->
                 Gdx.app.postRunnable {
                     gameBoard.multiplayerScore = oppScore
@@ -314,6 +314,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         gameBoard.multiplayerScore = 0
         gameObjects.clearAllGems()
         spawnTimer = 0f
+        gameBoard.currentGem = null
         Gdx.app.log("GameState", "Game Reset! All gems cleared.")
     }
 
