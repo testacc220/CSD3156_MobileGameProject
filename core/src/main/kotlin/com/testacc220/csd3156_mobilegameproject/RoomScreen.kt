@@ -131,6 +131,10 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
 
         backButton.addListener(object : ChangeListener() {
             override fun changed(event: ChangeEvent?, actor: Actor?) {
+                if(isHostMode)
+                {
+                    androidLauncherInterface.deletRoom()
+                }
                 androidLauncherInterface.setMultiplayerFalse()
                 game.setScreen(MainMenuScreen(game, androidLauncherInterface))
             }
