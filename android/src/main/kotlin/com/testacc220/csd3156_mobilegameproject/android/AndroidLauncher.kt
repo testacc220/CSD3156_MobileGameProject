@@ -431,7 +431,11 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     }
 
     override fun setMultiplayerTrue() {
-        multiplayFlag = !multiplayFlag
+        multiplayFlag = true
+    }
+
+    override fun setMultiplayerFalse() {
+        multiplayFlag = false
     }
 
     override fun getMultipFlag(): Boolean {

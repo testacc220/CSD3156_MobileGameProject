@@ -89,8 +89,6 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                         gameBoard.multiplayerScore = oppScore
                     } }
             }
-
-
             if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
             {
                 androidLauncherInterface.updateOwnScore(gameBoard.score)

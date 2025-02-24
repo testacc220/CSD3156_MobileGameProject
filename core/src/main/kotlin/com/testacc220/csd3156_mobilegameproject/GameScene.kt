@@ -213,6 +213,8 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
         gameLabelOpponent.setText("Score: ${gameState.getMultiplayerScore()}")
+        //gameLabelOpponent.setText("Score: ")
+
 
         // Testing read from database haha
 //        androidLauncherInterface.readUsrDatabase { testScore ->
@@ -220,6 +222,10 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 //            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
 //        }
         if (gameState.getGameBoard().isGameOver) {
+            if(androidLauncherInterface.getMultipFlag())
+            {
+                showWinOrLose()
+            }
             showGameOverUI()
         }
 
@@ -263,6 +269,26 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         shapeRenderer.dispose()
     }
 
+    private fun showWinOrLose() {
+        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
+        var winLoseLabel = Label("GAME OVER", labelStyle)
+        winLoseLabel.setPosition(stage.width / 2 - winLoseLabel.width / 2, stage.height / 2 + 130)
+        var opponentScore = 0
+        androidLauncherInterface.getOpponentScore {oppScore : Int ->
+            Gdx.app.postRunnable {
+                opponentScore = oppScore
+            } }
+        if(opponentScore > gameState.getScore())
+        {
+            winLoseLabel = Label("You Lose!", labelStyle)
+        }
+        else if(opponentScore < gameState.getScore())
+        {
+            winLoseLabel = Label("You Win!", labelStyle)
+        }
+
+    }
+
     private fun showGameOverUI() {
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
         labelStyle.font.data.setScale(7f)
@@ -288,7 +314,10 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
             override fun clicked(event: InputEvent?, x: Float, y: Float) {
                 Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
                 //restartGame()
+                androidLauncherInterface.setMultiplayerFalse()
                 game.setScreen(MainMenuScreen(game, androidLauncherInterface))
+
+
             }
         })
 
