@@ -17,7 +17,7 @@ interface AndroidLauncherInterface {
     fun listenForPlayerJoin(roomId: String, onPlayerJoined: () -> Unit)
     fun setMultiplayerTrue()
     fun getMultipFlag(): Boolean
-    fun checkWin(): Boolean
+    fun checkWin(callback: (Boolean) -> Unit)
     fun getOpponentScore(callback: (Int) -> Unit)
     fun updateOwnScore(ownScore : Int)
     //fun readUsrDatabase(onResult: (Int) -> Unit)

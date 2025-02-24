@@ -523,37 +523,38 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }
     }
 
-    override fun checkWin(): Boolean {
+    override fun checkWin(callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
-        var retVal = false
-        db.clearPersistence()
         val roomRef = db.collection("RoomData").document(currRoom)
-        roomRef.get().addOnSuccessListener { document ->
-            if (document.exists()) { // Check if the document exists
-                val player1 = document.getString("player1")
-                val player2 = document.getString("player2")
-                val oppP1LoseBool = document.getBoolean("player1Lose")
-                val oppP2LoseBool = document.getBoolean("player2Lose")
 
+        // Create a listener that can be detached later if needed
+        val listener = roomRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("Hello", "Error listening for win condition", error)
+                callback(false)
+                return@addSnapshotListener
+            }
 
-                if (currUsrname == player1) {
-                    // Update the document using the DocumentReference
-                    if (oppP2LoseBool == true) {
-                        retVal = true
-                    }
+            if (snapshot != null && snapshot.exists()) {
+                val player1 = snapshot.getString("player1")
+                val player2 = snapshot.getString("player2")
+                val oppP1LoseBool = snapshot.getBoolean("player1Lose")
+                val oppP2LoseBool = snapshot.getBoolean("player2Lose")
+
+                val hasWon = if (currUsrname == player1) {
+                    oppP2LoseBool == true
                 } else {
-                    if (oppP1LoseBool == true) {
-                        retVal = true
-                    }
+                    oppP1LoseBool == true
                 }
-            }
-                else {
+
+                callback(hasWon)
+            } else {
                 Log.d("Hello", "gameover Document does not exist")
+                callback(false)
             }
-        }.addOnFailureListener { e ->
-            Log.e("Hello", "Error fetching gameover document", e)
         }
-        return retVal
+
+
     }
 
     override fun sendLost() {
