@@ -222,10 +222,10 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 //            gameLabel.setText("$testScore") // ✅ UI updates inside the callback
 //        }
         if (gameState.getGameBoard().isGameOver) {
-            if(androidLauncherInterface.getMultipFlag())
+            /*if(androidLauncherInterface.getMultipFlag())
             {
                 showWinOrLose()
-            }
+            }*/
             showGameOverUI()
         }
 
