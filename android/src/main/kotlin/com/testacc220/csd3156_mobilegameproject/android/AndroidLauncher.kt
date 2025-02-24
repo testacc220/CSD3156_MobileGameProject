@@ -566,10 +566,18 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 val oppP1LoseBool = snapshot.getBoolean("player1Lose")
                 val oppP2LoseBool = snapshot.getBoolean("player2Lose")
 
-                val hasWon = if (currUsrname == player1) {
-                    oppP2LoseBool == true
+                var hasWon = false
+
+                if (currUsrname == player1 ) {
+                    if(oppP2LoseBool == true)
+                    {
+                        hasWon = true
+                    }
                 } else {
-                    oppP1LoseBool == true
+                    if(oppP1LoseBool == true)
+                    {
+                        hasWon = true
+                    }
                 }
                 Log.d("Hello", "hasWon is, $hasWon")
                 callback(hasWon)
