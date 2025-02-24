@@ -563,8 +563,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             if (snapshot != null && snapshot.exists()) {
                 val player1 = snapshot.getString("player1")
                 val player2 = snapshot.getString("player2")
-                val oppP1LoseBool = snapshot.getBoolean("player1Lose")
-                val oppP2LoseBool = snapshot.getBoolean("player2Lose")
+                val oppP1LoseBool = snapshot.getBoolean("player1Gameover")
+                val oppP2LoseBool = snapshot.getBoolean("player2Gameover")
 
                 var hasWon = false
 

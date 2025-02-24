@@ -76,6 +76,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
         if (gameBoard.isStable() && !isProcessingMerges) {
             checkForMerges()
         }
+        
 
         // Spawn a new gem every 1 second.
         if (gameBoard.currentGem == null && !isProcessingMerges) {
@@ -93,6 +94,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                         gameBoard.isGameOver = true
                     }
                 }
+
             }
             if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
             {
