@@ -495,11 +495,11 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                     if (currUsrname == document.getString("player1")) {
                         document.getLong("player2score")?.let { callback(it.toInt()) }
                         val player2Name = document.getString("player2")
-                        Log.d("Hello", "opponent is $player2Name")
+                        //Log.d("Hello", "opponent is $player2Name")
                     } else {
                         document.getLong("player1score")?.let { callback(it.toInt()) }
                         val player1Name = document.getString("player1")
-                        Log.d("Hello", "opponent is $player1Name")
+                        //Log.d("Hello", "opponent is $player1Name")
                     }
 
                 } else { //username not found
@@ -571,7 +571,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 } else {
                     oppP1LoseBool == true
                 }
-
+                Log.d("Hello", "hasWon is, $hasWon")
                 callback(hasWon)
             } else {
                 Log.d("Hello", "gameover Document does not exist")
