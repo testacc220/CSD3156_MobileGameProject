@@ -485,6 +485,11 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         return multiplayFlag
     }
 
+    override fun gameOverState(gameOverStateCheck : Boolean)
+    {
+        Log.d("Hello", "gameOverStateCheck is $gameOverStateCheck")
+    }
+
     override fun getOpponentScore(callback: (Int) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         db.clearPersistence()

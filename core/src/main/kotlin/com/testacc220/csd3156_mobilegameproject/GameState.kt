@@ -77,6 +77,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             checkForMerges()
         }
 
+        androidLauncherInterface.gameOverState(gameBoard.isGameOver)
 
         // Spawn a new gem every 1 second.
         if (gameBoard.currentGem == null && !isProcessingMerges) {
@@ -94,6 +95,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                     androidLauncherInterface.checkWin { hasWon ->
                         if (hasWon == true) {
                             gameBoard.isGameOver = true
+
                         }
                     }
                 }

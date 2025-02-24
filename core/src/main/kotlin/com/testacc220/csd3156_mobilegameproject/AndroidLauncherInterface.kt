@@ -27,4 +27,5 @@ interface AndroidLauncherInterface {
     fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit)
     fun compareHighscore(inputScore : Int): Boolean
 //    fun regUsr()
+fun gameOverState(gameOverStateCheck : Boolean)
 }
