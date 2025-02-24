@@ -162,6 +162,10 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
             if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
                 gameBoard.isGameOver = true
+                if (androidLauncherInterface.getMultipFlag())
+                {
+                    androidLauncherInterface.sendLost()
+                }
             }
         } else {
             // Resolve lateral collisions by preventing movement into an occupied space
@@ -183,6 +187,10 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
         if (isColumnOverflowed(randomX)) {
             gameBoard.isGameOver = true
+            if (androidLauncherInterface.getMultipFlag())
+            {
+                androidLauncherInterface.sendLost()
+            }
             return
         }
 

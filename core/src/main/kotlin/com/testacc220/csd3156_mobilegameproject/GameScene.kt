@@ -290,10 +290,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
     }
 
     private fun showGameOverUI() {
-        if (androidLauncherInterface.getMultipFlag())
-        {
-            androidLauncherInterface.sendLost()
-        }
+
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
         labelStyle.font.data.setScale(7f)
         val gameOverLabel = Label("GAME OVER", labelStyle)
