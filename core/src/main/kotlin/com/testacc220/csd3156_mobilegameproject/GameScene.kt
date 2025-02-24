@@ -44,7 +44,9 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
     private lateinit var skin: Skin
     private val stage: Stage = Stage(ScreenViewport())
     private val table: Table = Table()
+    private val tableEnem: Table = Table()
     private lateinit var gameLabel: Label
+    private lateinit var gameLabelOpponent: Label
     private var physicsEngine: PhysicsEngine = PhysicsEngine()
 
     // Input handling
@@ -101,11 +103,24 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
         gameLabel = Label("Score: 1", labelStyle)
+        gameLabelOpponent = Label("Score: 123", labelStyle)
+        if(androidLauncherInterface.getMultipFlag()) {
+            gameLabelOpponent.isVisible = true
+        }else{
+            gameLabelOpponent.isVisible = false
+        }
         table.setFillParent(true)
         table.top().left().pad(20f)  // Align to the top-left with padding
-        table.add(gameLabel)
+        table.add(gameLabel).width(70f)
+        table.add(gameLabelOpponent).width(70f)
+        gameLabelOpponent.apply { setFontScale(50.0f) }
 
         stage.addActor(table)
+
+        tableEnem.setFillParent(true)
+        //tableEnem.top().center().pad(20f)  // Align to the top-left with padding
+        //tableEnem.add(gameLabelOpponent)
+        stage.addActor(tableEnem)
         Gdx.input.inputProcessor = stage
 
         // Initialize game state
@@ -287,10 +302,21 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
         gameLabel = Label("Score: 0", labelStyle)
+        gameLabelOpponent = Label("Score: 0", labelStyle)
+        if(androidLauncherInterface.getMultipFlag()) {
+            gameLabelOpponent.isVisible = true
+        }else{
+            gameLabelOpponent.isVisible = false
+        }
         table.setFillParent(true)
         table.top().left().pad(20f)
         table.add(gameLabel)
         stage.addActor(table)
+
+        tableEnem.setFillParent(true)
+        tableEnem.top().right().pad(20f)  // Align to the top-left with padding
+        tableEnem.add(gameLabelOpponent)
+        stage.addActor(tableEnem)
         Gdx.app.log("GameScene", "Game Restarted!")
     }
 

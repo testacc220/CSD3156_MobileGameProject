@@ -8,7 +8,14 @@ interface AndroidLauncherInterface {
     fun addUser(usrNameTmp : String, passWrdTmp : String)
     fun checkUserDetails(getValUser: String, getValPw: String, callback: (Int) -> Unit)
     fun readDatabase2()
+    fun createRoom(inRoomName : String)
+    fun joinRoom(inRoomName : String)
+    fun checkRoomAvail(inRoomName : String, callback: (Boolean) -> Unit)
 
+    fun setMultiplayerTrue()
+    fun getMultipFlag(): Boolean
+    fun getOpponentScore(callback: (Int) -> Unit)
+    fun updateOwnScore(ownScore : Int)
     //fun readUsrDatabase(onResult: (Int) -> Unit)
 //    fun getLastHighscore():Int
     fun updateHighscore(newHighscore : Int)

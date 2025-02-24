@@ -22,6 +22,7 @@ import kotlin.coroutines.resume
 class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     public var lastHighscore = 0
     public var currUsrname = ""
+    public var currRoom = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -280,13 +281,88 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 //        val newScoreData = hashMapOf(
 //            "password" to "testoo",
 //            "highscore" to 1232)
-        Log.d("ouch", "DocumentSnapshot successfully written for $currUsrname!")
+//        Log.d("ouch", "DocumentSnapshot successfully written for $currUsrname!")
         db.collection("PlayerData")
             .document(currUsrname)
             .update("highscore", newHighscore)
 //            .set(newScoreData)
             .addOnSuccessListener { Log.d("ouch", "DocumentSnapshot successfully written!") }
             .addOnFailureListener { e -> Log.w("ouch", "Error writing document", e) }
+    }
+
+    override fun createRoom(inRoomName : String)
+    {
+        // Validate input
+        if (inRoomName.isNullOrEmpty()) {
+            Log.e("hello", "room name is empty !! the heck")
+            return
+        }
+        val roomData = hashMapOf(
+            "player1" to currUsrname
+        )
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+
+        if (db == null) {
+            Log.e("hello", "Firestore instance is null")
+            return
+        }
+        Log.d("hello", "adduser instance gotten")
+        db.collection("RoomData").document(inRoomName).set(roomData)
+            .addOnSuccessListener {
+                currRoom = inRoomName
+                multiplayFlag = true
+                Log.d("hello", "Room created successfully $multiplayFlag")
+            }
+            .addOnFailureListener { e ->
+                Log.e("hello", "Room creation failed", e)
+                //Log.d("hello", "user entry failed ok")
+            }
+        Log.d("hello", "adduser end func")
+    }
+
+    override fun joinRoom(inRoomName : String)
+    {
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+
+        db.collection("RoomData")
+            .document(inRoomName)
+            .update("player2", "pukiman")
+//            .set(newScoreData)
+            .addOnSuccessListener {
+                currRoom = inRoomName
+                multiplayFlag = true
+                Log.d("ouch", "DocumentSnapshot successfully written! $multiplayFlag")
+            }
+            .addOnFailureListener { e ->
+                Log.w("ouch", "Error writing document", e)
+            }
+    }
+
+    override fun checkRoomAvail(inRoomName : String, callback: (Boolean) -> Unit)
+    {
+        Log.d("Explo", "desired room name is, $inRoomName")
+        val db = FirebaseFirestore.getInstance()
+        db.collection("RoomData")
+            .document(inRoomName)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    //got the user name means is taken alr
+                    callback(true)
+                    Log.d("Explo", "room exist")
+                } else {
+                    //username no exist
+                    callback(false)
+                    Log.d("Explo", "room no exist")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Explo", " checkRoomAvail get failed with ", exception)
+                // here is failure to even get playerdata
+                callback(false)
+            }
     }
 
     override fun compareHighscore(inputScore : Int): Boolean
@@ -335,6 +411,58 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
+    override fun setMultiplayerTrue()
+    {
+        multiplayFlag = !multiplayFlag
+    }
+
+    override fun getMultipFlag():Boolean
+    {
+        return multiplayFlag
+    }
+
+    override fun getOpponentScore(callback: (Int) -> Unit)
+    {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("RoomData")
+            .document(currRoom)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) { //username is found?
+                    val roomHost = document.getString("player2")
+//                    val databaseSidePW = document.getString("password")
+//                    Log.d("Hello", "username2 is $getValUser")
+//                    Log.d("Hello", "password2 is $getValPw")
+//                    Log.d("Hello", "database password is $databaseSidePW")
+//                    if(getValPw == databaseSidePW) // if password of username match
+//                    {
+//                        callback(1)
+//                        currUsrname = getValUser
+//                        lastHighscore = document.getLong("highscore")?.toInt() ?: 0
+//                        Log.d("Hello", "callback true for checkuserdetails")
+//                    }
+//                    else // if password is wrong
+//                    {
+//                        callback(2)
+//                        Log.d("Hello", "callback false for checkuserdetails")
+//                    }
+
+                } else { //username not found
+                    Log.d("Hello", "Room not found")
+                    callback(3)
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Hello", "get for checksUserDetails failed with ", exception)
+                callback(4) //network connection error
+            }
+    }
+
+    override fun updateOwnScore(ownScore : Int)
+    {
+
+    }
+    private var multiplayFlag = false
 }
 
 /*fun addUser() {
