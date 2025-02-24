@@ -184,23 +184,46 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
 
     private fun createRoom(roomName: String) {
         showError(" ")
-        androidLauncherInterface.createRoom(roomName)
-
-        // Update UI to show waiting state
-        table.clearChildren()
-        table.add(titleLabel).padTop(50f).padBottom(30f).row()
-        table.add(roomCodeDisplayLabel.apply { setText("Room Code: $roomName") }).padBottom(30f).row()
-        table.add(loadingLabel).padBottom(30f).row()
-        table.add(backButton).width(400f).height(60f).padBottom(50f).row()
-
-        // Listen for player2 joining
-        androidLauncherInterface.listenForPlayerJoin(roomName) {
+        androidLauncherInterface.checkRoomExistBefCreate(roomName) { availBool: Boolean ->
             Gdx.app.postRunnable {
-                // Set multiplayer flag to true
-                androidLauncherInterface.setMultiplayerTrue()
-                game.setScreen(GameScene(game, androidLauncherInterface))
+                if (!availBool) {
+                    androidLauncherInterface.createRoom(roomName)
+                    // Update UI to show waiting state
+                    table.clearChildren()
+                    table.add(titleLabel).padTop(50f).padBottom(30f).row()
+                    table.add(roomCodeDisplayLabel.apply { setText("Room Code: $roomName") }).padBottom(30f).row()
+                    table.add(loadingLabel).padBottom(30f).row()
+                    table.add(backButton).width(400f).height(60f).padBottom(50f).row()
+
+                    // Listen for player2 joining
+                    androidLauncherInterface.listenForPlayerJoin(roomName) {
+                        Gdx.app.postRunnable {
+                            // Set multiplayer flag to true
+                            androidLauncherInterface.setMultiplayerTrue()
+                            game.setScreen(GameScene(game, androidLauncherInterface))
+                        }
+                    }
+                } else {
+                    showError("Room name is already in use")
+                }
             }
         }
+
+        // Update UI to show waiting state
+//        table.clearChildren()
+//        table.add(titleLabel).padTop(50f).padBottom(30f).row()
+//        table.add(roomCodeDisplayLabel.apply { setText("Room Code: $roomName") }).padBottom(30f).row()
+//        table.add(loadingLabel).padBottom(30f).row()
+//        table.add(backButton).width(400f).height(60f).padBottom(50f).row()
+
+        // Listen for player2 joining
+//        androidLauncherInterface.listenForPlayerJoin(roomName) {
+//            Gdx.app.postRunnable {
+//                // Set multiplayer flag to true
+//                androidLauncherInterface.setMultiplayerTrue()
+//                game.setScreen(GameScene(game, androidLauncherInterface))
+//            }
+//        }
     }
 
     private fun joinRoom(roomName: String) {

@@ -319,6 +319,31 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
+    override fun checkRoomExistBefCreate(inRoomName : String, callback: (Boolean) -> Unit)
+    {
+        val db = FirebaseFirestore.getInstance()
+        db.collection("RoomData")
+            .document(inRoomName)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    //got the user name means is taken alr
+                    callback(true)
+                    Log.d("Hello", "room id already exists")
+                } else {
+                    //username no exist
+                    callback(false)
+                    Log.d("Hello", "room id does not exist")
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Hello", " checkRoomExistBefCreate get failed with ", exception)
+                // here is failure to even get room data
+                // since fail assume room exist for safety
+                callback(true)
+            }
+    }
+
     override fun deletRoom()
     {
         if(currRoom == "")
@@ -376,7 +401,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
             .addOnFailureListener { exception ->
                 Log.d("Explo", " checkRoomAvail get failed with ", exception)
-                // here is failure to even get playerdata
+                // here is failure to even get roomdata
                 callback(false)
             }
     }
