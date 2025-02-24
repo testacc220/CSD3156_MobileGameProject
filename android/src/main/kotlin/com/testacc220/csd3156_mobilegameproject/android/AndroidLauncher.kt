@@ -276,7 +276,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     override fun updateHighscore(newHighscore : Int)
     {
         val db = FirebaseFirestore.getInstance()
-
+        db.clearPersistence()
 //        val newScoreData = hashMapOf(
 //            "password" to "testoo",
 //            "highscore" to 1232)
