@@ -88,6 +88,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                     Gdx.app.postRunnable {
                         gameBoard.multiplayerScore = oppScore
                     } }
+                androidLauncherInterface.checkWin()
             }
             if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
             {

@@ -295,7 +295,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }
         val roomData = hashMapOf(
             "player1" to currUsrname,
-            "player1score" to 0
+            "player1score" to 0,
+            "player1Gameover" to false
         )
         val db = FirebaseFirestore.getInstance()
         db.clearPersistence()
@@ -326,7 +327,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         db.collection("RoomData")
             .document(inRoomName)
             //.update("player2", currUsrname)
-            .update(mapOf("player2" to currUsrname, "player2score" to 0))
+            .update(mapOf("player2" to currUsrname, "player2score" to 0, "player2Gameover" to false))
 //            .set(newScoreData)
             .addOnSuccessListener {
                 currRoom = inRoomName
@@ -478,7 +479,6 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         roomRef.get().addOnSuccessListener { document ->
             if (document.exists()) { // Check if the document exists
                 val player1 = document.getString("player1")
-                val player2 = document.getString("player2")
 
                 if (currUsrname == player1) {
                     // Update the document using the DocumentReference
@@ -504,6 +504,75 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
         }.addOnFailureListener { e ->
             Log.e("Hello", "Error fetching document", e)
+        }
+    }
+
+    override fun checkWin(): Boolean {
+        val db = FirebaseFirestore.getInstance()
+        var retVal = false
+        db.clearPersistence()
+        val roomRef = db.collection("RoomData").document(currRoom)
+        roomRef.get().addOnSuccessListener { document ->
+            if (document.exists()) { // Check if the document exists
+                val player1 = document.getString("player1")
+                val player2 = document.getString("player2")
+                val oppP1LoseBool = document.getBoolean("player1Lose")
+                val oppP2LoseBool = document.getBoolean("player2Lose")
+
+
+                if (currUsrname == player1) {
+                    // Update the document using the DocumentReference
+                    if (oppP2LoseBool == true) {
+                        retVal = true
+                    }
+                } else {
+                    if (oppP1LoseBool == true) {
+                        retVal = true
+                    }
+                }
+            }
+                else {
+                Log.d("Hello", "gameover Document does not exist")
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Hello", "Error fetching gameover document", e)
+        }
+        return retVal
+    }
+
+    override fun sendLost() {
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+        val roomRef = db.collection("RoomData").document(currRoom)
+        roomRef.get().addOnSuccessListener { document ->
+            if (document.exists()) { // Check if the document exists
+                val player1 = document.getString("player1")
+                val player2 = document.getString("player2")
+
+                if (currUsrname == player1) {
+                    // Update the document using the DocumentReference
+                    roomRef.update("player1Gameover", true)
+                        .addOnSuccessListener {
+                            Log.d("Hello", "gameover updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Hello", "Error updating document", e)
+                        }
+                } else {
+                    // Update the document using the DocumentReference
+                    roomRef.update("player2Gameover", true)
+                        .addOnSuccessListener {
+                            Log.d("Hello", "gameover updated successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("Hello", "Error updating document", e)
+                        }
+                }
+            } else {
+                Log.d("Hello", "gameover Document does not exist")
+            }
+        }.addOnFailureListener { e ->
+            Log.e("Hello", "Error fetching gameover document", e)
         }
     }
 
