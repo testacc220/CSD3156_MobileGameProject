@@ -82,12 +82,16 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
             //gameBoard.score++ for testing
-            androidLauncherInterface.getOpponentScore {oppScore : Int ->
-                Gdx.app.postRunnable {
-                    gameBoard.multiplayerScore = oppScore
-                } }
+            if(androidLauncherInterface.getMultipFlag())
+            {
+                androidLauncherInterface.getOpponentScore {oppScore : Int ->
+                    Gdx.app.postRunnable {
+                        gameBoard.multiplayerScore = oppScore
+                    } }
+            }
 
-            if(prevScore != gameBoard.score)
+
+            if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
             {
                 androidLauncherInterface.updateOwnScore(gameBoard.score)
                 prevScore = gameBoard.score

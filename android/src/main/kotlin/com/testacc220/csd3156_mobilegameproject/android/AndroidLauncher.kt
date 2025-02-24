@@ -23,7 +23,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     public var lastHighscore = 0
     public var currUsrname = ""
     public var currRoom = ""
-    private var multiplayFlag = false
+    public var multiplayFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
