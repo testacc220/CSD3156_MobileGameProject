@@ -335,6 +335,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
                 Gdx.app.log("GameScene", "Play Again Button Position: ${playAgainButton.x}, ${playAgainButton.y}")
                 //restartGame()
                 androidLauncherInterface.setMultiplayerFalse()
+                androidLauncherInterface.deletRoom()
                 game.setScreen(MainMenuScreen(game, androidLauncherInterface))
 
 
