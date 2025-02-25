@@ -27,6 +27,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     public var multiplayFlag = false
     private var roomLoseListener: ListenerRegistration? = null
     private var roomWinListener: ListenerRegistration? = null
+    private var playerJoinListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -290,6 +291,43 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             .addOnFailureListener { e -> Log.w("ouch", "Error writing document", e) }
     }
 
+    override fun createRoomNew(inRoomName: String) {
+
+        Log.e("hello", "$currUsrname is  currUsrname")
+        // Validate input
+        if (inRoomName.isNullOrEmpty()) {
+            Log.e("hello", "room name is empty !! the heck")
+            return
+        }
+        /* val roomData = hashMapOf(
+             "player1" to currUsrname,
+             "player1score" to 0,
+             "player1Gameover" to false,
+             "player1Won" to false
+         )*/
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+
+        if (db == null) {
+            Log.e("hello", "Firestore instance is null")
+            return
+        }
+        Log.d("hello", "createRoom instance gotten")
+        db.collection("RoomData")
+            .document(inRoomName)
+            .set(mapOf("player1" to currUsrname, "player1score" to 0, "player1Gameover" to false, "player1Won" to false))
+            .addOnSuccessListener {
+                currRoom = inRoomName
+                multiplayFlag = true
+                Log.d("hello", "Room created successfully $multiplayFlag")
+            }
+            .addOnFailureListener { e ->
+                Log.e("hello", "Room creation failed", e)
+                //Log.d("hello", "user entry failed ok")
+            }
+        Log.d("hello", "createRoom end func")
+    }
+
     override fun createRoom(inRoomName: String) {
 
         Log.e("hello", "$currUsrname is  currUsrname")
@@ -414,11 +452,31 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
+//    override fun listenForPlayerJoin(roomId: String, onPlayerJoined: () -> Unit) {
+//        val db = FirebaseFirestore.getInstance()
+//        val roomRef = db.collection("RoomData").document(roomId)
+//
+//        roomRef.addSnapshotListener { snapshot, error ->
+//            if (error != null) {
+//                Log.e("Explo", "Error listening for room updates", error)
+//                return@addSnapshotListener
+//            }
+//
+//            if (snapshot != null && snapshot.exists()) {
+//                val player2 = snapshot.getString("player2") ?: ""
+//                if (player2.isNotEmpty()) {
+//                    onPlayerJoined()
+//                }
+//            }
+//        }
+//    }
+
     override fun listenForPlayerJoin(roomId: String, onPlayerJoined: () -> Unit) {
+        playerJoinListener?.remove()
         val db = FirebaseFirestore.getInstance()
         val roomRef = db.collection("RoomData").document(roomId)
 
-        roomRef.addSnapshotListener { snapshot, error ->
+        playerJoinListener = roomRef.addSnapshotListener { snapshot, error ->
             if (error != null) {
                 Log.e("Explo", "Error listening for room updates", error)
                 return@addSnapshotListener
@@ -431,6 +489,12 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 }
             }
         }
+    }
+
+    override fun
+        stopPlayerJoinListener() {
+        playerJoinListener?.remove()
+        playerJoinListener = null
     }
 
 

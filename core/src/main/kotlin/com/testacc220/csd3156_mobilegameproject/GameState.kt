@@ -139,34 +139,6 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                     Gdx.app.postRunnable {
                         gameBoard.multiplayerScore = oppScore
                     } }
-                if((getGameBoard().isGameOver) == false)
-                {
-                    /*androidLauncherInterface.checkWin { hasWon ->
-                        Gdx.app.postRunnable {
-                            if (hasWon == true) {
-                                won = true
-                                gameBoard.isGameOver = true
-                            }
-                        }
-                    }*/
-
-                   /* androidLauncherInterface.checkLose { hasLost ->
-                        Gdx.app.postRunnable {
-                            if (hasLost == true) {
-                                //lose = true
-                                gameBoard.isGameOver = true
-                            }
-                        }
-                    }*/
-
-
-                   /* if(won == true)
-                    {
-                        gameBoard.isGameOver = true
-                    }*/
-
-                }
-
 
             }
 

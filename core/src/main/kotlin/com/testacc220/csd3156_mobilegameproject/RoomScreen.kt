@@ -187,7 +187,7 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
         androidLauncherInterface.checkRoomExistBefCreate(roomName) { availBool: Boolean ->
             Gdx.app.postRunnable {
                 if (!availBool) {
-                    androidLauncherInterface.createRoom(roomName)
+                    androidLauncherInterface.createRoomNew(roomName)
                     // Update UI to show waiting state
                     table.clearChildren()
                     table.add(titleLabel).padTop(50f).padBottom(30f).row()
@@ -200,6 +200,7 @@ class RoomScreen(private val game: MainKt, private val androidLauncherInterface:
                         Gdx.app.postRunnable {
                             // Set multiplayer flag to true
                             androidLauncherInterface.setMultiplayerTrue()
+                            androidLauncherInterface.stopPlayerJoinListener()
                             game.setScreen(GameScene(game, androidLauncherInterface))
                         }
                     }

@@ -29,4 +29,6 @@ interface AndroidLauncherInterface {
     fun sendWon()
     fun startListeningForLose(callback: (Boolean) -> Unit)
     fun startListeningForWin(callback: (Boolean) -> Unit)
+    fun createRoomNew(inRoomName: String)
+    fun stopPlayerJoinListener()
 }
