@@ -296,7 +296,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
     private fun showGameOverUI() {
 
-        val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
+        var labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
         labelStyle.font.data.setScale(7f)
         var gameOverLabel = Label("", labelStyle)
         if(!androidLauncherInterface.getMultipFlag())
@@ -305,7 +305,8 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         }
         else if(gameState.won == true)
         {
-            gameOverLabel = Label("YOU WON!", labelStyle)
+            labelStyle = Label.LabelStyle(skin.getFont("font"), Color.YELLOW)
+            gameOverLabel = Label("YOU WON", labelStyle)
         }
         else if(gameState.won == false)
         {
@@ -323,7 +324,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val buttonStyle = skin.get("default", TextButton.TextButtonStyle::class.java)
         val playAgainButton = TextButton("Return to Main Menu", buttonStyle)
 
-        playAgainButton.setSize(500f, 120f)
+        playAgainButton.setSize(1000f, 120f)
         playAgainButton.setPosition(
             stage.width / 2 - playAgainButton.width / 2,
             stage.height / 2 - playAgainButton.height / 2
