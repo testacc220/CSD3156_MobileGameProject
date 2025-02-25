@@ -30,6 +30,8 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     private var prevScore = getScore()
     private var sentLose = false;
     private var won = false;
+    private var startedListenerForLose = false;
+    private var startedListenerForWin = false;
 
     /**
      * Initializes the game state with screen dimensions
@@ -49,6 +51,34 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
      * @param deltaTime Time elapsed since last frame in seconds
      */
     fun update(deltaTime: Float) {
+        if(androidLauncherInterface.getMultipFlag())
+        {
+            if(!startedListenerForLose)
+            {
+                androidLauncherInterface.startListeningForLose { hasLost ->
+                    if (hasLost) {
+                        //Log.d("GameStatus", "You lost!")
+                        //androidLauncherInterface.stopListeningForLose()
+                        gameBoard.isGameOver = true
+                    }
+                }
+                startedListenerForLose = true
+            }
+
+            if(!startedListenerForWin)
+            {
+                androidLauncherInterface.startListeningForWin { hasWon ->
+                    if (hasWon) {
+                        //Log.d("GameStatus", "You lost!")
+                        //androidLauncherInterface.stopListeningForLose()
+                        gameBoard.isGameOver = true
+                    }
+                }
+                startedListenerForWin = true
+            }
+        }
+
+
         if (gameBoard.isGameOver == true)
         {
             if(androidLauncherInterface.compareHighscore(getScore()))
@@ -101,29 +131,31 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             }
             if(androidLauncherInterface.getMultipFlag())
             {
+
+
                 androidLauncherInterface.getOpponentScore {oppScore : Int ->
                     Gdx.app.postRunnable {
                         gameBoard.multiplayerScore = oppScore
                     } }
                 if((getGameBoard().isGameOver) == false)
                 {
-                    androidLauncherInterface.checkWin { hasWon ->
+                    /*androidLauncherInterface.checkWin { hasWon ->
                         Gdx.app.postRunnable {
                             if (hasWon == true) {
                                 won = true
-                                //gameBoard.isGameOver = true
+                                gameBoard.isGameOver = true
                             }
                         }
-                    }
+                    }*/
 
-                    androidLauncherInterface.checkLose { hasLost ->
+                   /* androidLauncherInterface.checkLose { hasLost ->
                         Gdx.app.postRunnable {
                             if (hasLost == true) {
                                 //lose = true
                                 gameBoard.isGameOver = true
                             }
                         }
-                    }
+                    }*/
 
 
                    /* if(won == true)

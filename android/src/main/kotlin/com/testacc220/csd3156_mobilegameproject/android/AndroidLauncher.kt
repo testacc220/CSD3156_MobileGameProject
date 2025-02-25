@@ -10,6 +10,7 @@ import com.google.firebase.FirebaseApp
 import com.testacc220.csd3156_mobilegameproject.MainKt
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.testacc220.csd3156_mobilegameproject.AndroidLauncherInterface
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -24,6 +25,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     public var currUsrname = ""
     public var currRoom = ""
     public var multiplayFlag = false
+    private var roomLoseListener: ListenerRegistration? = null
+    private var roomWinListener: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -641,7 +644,6 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     override fun checkLose(callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val roomRef = db.collection("RoomData").document(currRoom)
-        updateOwnScore(1)
         // Get the document once instead of using a listener
         roomRef.get()
             .addOnSuccessListener { snapshot ->
@@ -675,6 +677,87 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 Log.e("Hello", "Error checking win condition", error)
                 callback(false)
             }
+    }
+
+    override fun startListeningForWin(callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val roomRef = db.collection("RoomData").document(currRoom)
+
+        // Remove previous listener if exists to prevent multiple listeners
+        roomWinListener?.remove()
+
+        roomWinListener = roomRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("Hello", "Error listening for win condition", error)
+                callback(false)
+                return@addSnapshotListener
+            }
+
+            var hasWon = false
+
+            if (snapshot != null && snapshot.exists()) {
+                val player1 = snapshot.getString("player1")
+                val player2 = snapshot.getString("player2")
+                val oppP1LoseBool = snapshot.getBoolean("player1Gameover")
+                val oppP2LoseBool = snapshot.getBoolean("player2Gameover")
+
+                if (currUsrname == player1 && oppP2LoseBool == true) {
+                    hasWon = true
+                    Log.d("Hello", "oppP2WinBool is, $oppP2LoseBool")
+                } else if (currUsrname == player2 && oppP1LoseBool == true) {
+                    hasWon = true
+                    Log.d("Hello", "oppP1WinBool is, $oppP1LoseBool")
+                }
+                Log.d("Hello", "hasLost is, $hasWon, user is $currUsrname")
+                callback(hasWon)
+            } else {
+                Log.d("Hello", "Game over document does not exist")
+                callback(false)
+            }
+        }
+    }
+
+    override fun startListeningForLose(callback: (Boolean) -> Unit) {
+        val db = FirebaseFirestore.getInstance()
+        val roomRef = db.collection("RoomData").document(currRoom)
+
+        // Remove previous listener if exists to prevent multiple listeners
+        roomLoseListener?.remove()
+
+        roomLoseListener = roomRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("Hello", "Error listening for win condition", error)
+                callback(false)
+                return@addSnapshotListener
+            }
+
+            var hasLost = false
+
+            if (snapshot != null && snapshot.exists()) {
+                val player1 = snapshot.getString("player1")
+                val player2 = snapshot.getString("player2")
+                val oppP1WinBool = snapshot.getBoolean("player1Won")
+                val oppP2WinBool = snapshot.getBoolean("player2Won")
+
+                if (currUsrname == player1 && oppP2WinBool == true) {
+                    hasLost = true
+                    Log.d("Hello", "oppP2WinBool is, $oppP2WinBool")
+                } else if (currUsrname == player2 && oppP1WinBool == true) {
+                    hasLost = true
+                    Log.d("Hello", "oppP1WinBool is, $oppP1WinBool")
+                }
+                Log.d("Hello", "hasLost is, $hasLost, user is $currUsrname")
+                callback(hasLost)
+            } else {
+                Log.d("Hello", "Game over document does not exist")
+                callback(false)
+            }
+        }
+    }
+
+    override fun stopListeningForLose() {
+        roomLoseListener?.remove()
+        roomLoseListener = null
     }
 
     override fun sendLost() {

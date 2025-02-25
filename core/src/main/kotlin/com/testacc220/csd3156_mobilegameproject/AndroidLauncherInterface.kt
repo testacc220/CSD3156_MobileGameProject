@@ -30,4 +30,7 @@ interface AndroidLauncherInterface {
 fun gameOverState(gameOverStateCheck : Boolean)
     fun checkLose(callback: (Boolean) -> Unit)
     fun sendWon()
+    fun startListeningForLose(callback: (Boolean) -> Unit)
+    fun stopListeningForLose()
+    fun startListeningForWin(callback: (Boolean) -> Unit)
 }
