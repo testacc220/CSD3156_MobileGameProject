@@ -28,4 +28,6 @@ interface AndroidLauncherInterface {
     fun compareHighscore(inputScore : Int): Boolean
 //    fun regUsr()
 fun gameOverState(gameOverStateCheck : Boolean)
+    fun checkLose(callback: (Boolean) -> Unit)
+    fun sendWon()
 }

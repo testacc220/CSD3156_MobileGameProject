@@ -55,12 +55,12 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             {
                 androidLauncherInterface.updateHighscore(getScore())
             }
-            if (androidLauncherInterface.getMultipFlag() && !sentLose)
+            if (androidLauncherInterface.getMultipFlag() && !sentLose && !won)
             {
-                Gdx.app.postRunnable {
+                //Gdx.app.postRunnable {
                     androidLauncherInterface.sendLost()
                     sentLose = true
-                }
+                //}
             }
             return
         }
@@ -110,11 +110,27 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                     androidLauncherInterface.checkWin { hasWon ->
                         Gdx.app.postRunnable {
                             if (hasWon == true) {
-                                gameBoard.isGameOver = true
-
+                                won = true
+                                //gameBoard.isGameOver = true
                             }
                         }
                     }
+
+                    androidLauncherInterface.checkLose { hasLost ->
+                        Gdx.app.postRunnable {
+                            if (hasLost == true) {
+                                //lose = true
+                                gameBoard.isGameOver = true
+                            }
+                        }
+                    }
+
+
+                   /* if(won == true)
+                    {
+                        gameBoard.isGameOver = true
+                    }*/
+
                 }
 
 
