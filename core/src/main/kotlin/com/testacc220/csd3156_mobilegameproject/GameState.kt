@@ -11,6 +11,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     private var isProcessingMerges  = false
     private val MAX_ANGLE = 60f; // Maximum tilt angle for device rotation
 
+
     /**
      * Defines possible orientations for the game board
      */
@@ -29,7 +30,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
     private var prevScore = getScore()
     private var sentLose = false;
-    private var won = false;
+    var won = false;
     private var startedListenerForLose = false;
     private var startedListenerForWin = false;
 
@@ -71,6 +72,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
                     if (hasWon) {
                         //Log.d("GameStatus", "You lost!")
                         //androidLauncherInterface.stopListeningForLose()
+                        won = true
                         gameBoard.isGameOver = true
                     }
                 }

@@ -703,12 +703,14 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
                 if (currUsrname == player1 && oppP2LoseBool == true) {
                     hasWon = true
+                    sendWon()
                     Log.d("Hello", "oppP2WinBool is, $oppP2LoseBool")
                 } else if (currUsrname == player2 && oppP1LoseBool == true) {
                     hasWon = true
+                    sendWon()
                     Log.d("Hello", "oppP1WinBool is, $oppP1LoseBool")
                 }
-                Log.d("Hello", "hasLost is, $hasWon, user is $currUsrname")
+                Log.d("Hello", "hasWon is, $hasWon, user is $currUsrname")
                 callback(hasWon)
             } else {
                 Log.d("Hello", "Game over document does not exist")

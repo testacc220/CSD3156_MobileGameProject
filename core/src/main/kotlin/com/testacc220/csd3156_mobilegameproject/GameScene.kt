@@ -68,6 +68,7 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
     private lateinit var tier1GemTile: Texture
     private lateinit var tier2GemTile: Texture
 
+
     override fun show() {
         Gdx.app.log("GameScene", "GameScene is now active.")
         physicsEngine.init()
@@ -297,7 +298,20 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.RED)
         labelStyle.font.data.setScale(7f)
-        val gameOverLabel = Label("GAME OVER", labelStyle)
+        var gameOverLabel = Label("", labelStyle)
+        if(!androidLauncherInterface.getMultipFlag())
+        {
+            gameOverLabel = Label("GAME OVER", labelStyle)
+        }
+        else if(gameState.won == true)
+        {
+            gameOverLabel = Label("YOU WON!", labelStyle)
+        }
+        else if(gameState.won == false)
+        {
+            gameOverLabel = Label("YOU LOST!", labelStyle)
+        }
+
         gameOverLabel.setPosition(stage.width / 2 - gameOverLabel.width / 2, stage.height / 2 + 100)
 
         gameOverLabel.pack()
