@@ -288,6 +288,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     }
 
     override fun createRoom(inRoomName: String) {
+
+        Log.e("hello", "$currUsrname is  currUsrname")
         // Validate input
         if (inRoomName.isNullOrEmpty()) {
             Log.e("hello", "room name is empty !! the heck")
@@ -305,7 +307,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             Log.e("hello", "Firestore instance is null")
             return
         }
-        Log.d("hello", "adduser instance gotten")
+        Log.d("hello", "createRoom instance gotten")
         db.collection("RoomData").document(inRoomName).set(roomData)
             .addOnSuccessListener {
                 currRoom = inRoomName
@@ -316,23 +318,18 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 Log.e("hello", "Room creation failed", e)
                 //Log.d("hello", "user entry failed ok")
             }
-        Log.d("hello", "adduser end func")
+        Log.d("hello", "createRoom end func")
     }
 
     override fun joinRoom(inRoomName: String) {
         Log.d("hello", "joining room")
         val db = FirebaseFirestore.getInstance()
         db.clearPersistence()
-        val roomData = hashMapOf(
-            "player2" to currUsrname,
-            "player2score" to 0,
-            "player2Gameover" to false
-        )
         Log.d("hello", "joining room 2")
         db.collection("RoomData")
             .document(inRoomName)
             //.update("player2", currUsrname)
-            .set(roomData)
+            .update(mapOf("player2" to currUsrname, "player2score" to 0, "player2Gameover" to false))
 //            .set(newScoreData)
             .addOnSuccessListener {
                 currRoom = inRoomName
