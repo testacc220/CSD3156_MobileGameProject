@@ -21,16 +21,12 @@ interface AndroidLauncherInterface {
     fun checkWin(callback: (Boolean) -> Unit)
     fun getOpponentScore(callback: (Int) -> Unit)
     fun updateOwnScore(ownScore : Int)
-    //fun readUsrDatabase(onResult: (Int) -> Unit)
-//    fun getLastHighscore():Int
     fun updateHighscore(newHighscore : Int)
     fun getTopTenHs(onResult: (List<Pair<String, Int>>) -> Unit)
     fun compareHighscore(inputScore : Int): Boolean
-//    fun regUsr()
-fun gameOverState(gameOverStateCheck : Boolean)
+    fun gameOverState(gameOverStateCheck : Boolean)
     fun checkLose(callback: (Boolean) -> Unit)
     fun sendWon()
     fun startListeningForLose(callback: (Boolean) -> Unit)
-    fun stopListeningForLose()
     fun startListeningForWin(callback: (Boolean) -> Unit)
 }

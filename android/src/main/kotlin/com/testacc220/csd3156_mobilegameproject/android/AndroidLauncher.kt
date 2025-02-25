@@ -679,6 +679,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
+    //A snapshot listener function that checks for winning the game
     override fun startListeningForWin(callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val roomRef = db.collection("RoomData").document(currRoom)
@@ -719,6 +720,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }
     }
 
+    //A snapshot listener function that checks for losing the game
     override fun startListeningForLose(callback: (Boolean) -> Unit) {
         val db = FirebaseFirestore.getInstance()
         val roomRef = db.collection("RoomData").document(currRoom)
@@ -732,7 +734,6 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 callback(false)
                 return@addSnapshotListener
             }
-
             var hasLost = false
 
             if (snapshot != null && snapshot.exists()) {
@@ -755,11 +756,6 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                 callback(false)
             }
         }
-    }
-
-    override fun stopListeningForLose() {
-        roomLoseListener?.remove()
-        roomLoseListener = null
     }
 
     override fun sendLost() {
@@ -805,66 +801,5 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
 
 }
 
-
-/*fun addUser() {
-    //Log.d("sdsds", "DocumentSnapshot entered")
-    //Log.d("sdsds", "instance added ok")
-    val testData = hashMapOf(
-        "highscore" to 24211,
-        "password" to "rickyssss",
-        "username" to "xiaomings ex",
-    )
-    //Log.d("sdsds", "hashmap added ok")
-
-    db.collection("PlayerData").document("$usrName").set(testData)
-    //db.collection("PlayerData").add(testData)
-        .addOnSuccessListener {
-            Log.d("sdsds", "DocumentSnapshot added ok")
-        }
-        .addOnFailureListener {
-            Log.d("sdsds", "DocumentSnapshot failed ok")
-        }
-
-    *//*db.collection("PlayerData")
-//        .orderBy("highscore",
-//            Query.Direction.DESCENDING)
-        .whereEqualTo("username", usrName)
-        .get()
-        .addOnSuccessListener { querySnap -> val hs = querySnap.documents.mapNotNull {
-                                    document ->
-                                        val username = document.getString("username")
-                                        val hs = document.getLong("highscore")?.toInt()
-                                        if(username != null && hs != null)
-                                            Log.w("Hello", "managed to read value: $hs" )
-            }
-        }*//*
-}*/
-
-fun readDatabase() :Int{
-    //Log.d("sdsds", "DocumentSnapshot entered")
-    val db = FirebaseFirestore.getInstance()
-    val usrName = "PukiMan2"
-    var hs = 0
-    db.collection("PlayerData")
-//        .orderBy("highscore",
-//            Query.Direction.DESCENDING)
-//        .whereEqualTo("username", usrName)
-//        .get()
-        .document(usrName)
-        .get()
-        .addOnSuccessListener { document ->
-            if (document != null) {
-                hs = document.getLong("highscore")?.toInt()?:0
-                Log.d("Hello", "DocumentSnapshot data: $hs")
-            } else {
-                Log.d("Hello", "No such document")
-            }
-        }
-        .addOnFailureListener { exception ->
-            Log.d("Hello", "get failed with ", exception)
-        }
-    return hs
-    // [END get_document]
-}
 
 
