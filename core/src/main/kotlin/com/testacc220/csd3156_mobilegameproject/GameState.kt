@@ -28,6 +28,8 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
     private var spawnTimer = 0f
 
     private var prevScore = getScore()
+    private var sentLose = false;
+    private var won = false;
 
     /**
      * Initializes the game state with screen dimensions
@@ -37,6 +39,7 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
      */
     fun initialize(screenWidth: Float, screenHeight: Float) {
         gameBoard.calculateScreenLayout(screenWidth, screenHeight)
+
     }
 
     /**
@@ -46,11 +49,18 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
      * @param deltaTime Time elapsed since last frame in seconds
      */
     fun update(deltaTime: Float) {
-        if (gameBoard.isGameOver)
+        if (gameBoard.isGameOver == true)
         {
             if(androidLauncherInterface.compareHighscore(getScore()))
             {
                 androidLauncherInterface.updateHighscore(getScore())
+            }
+            if (androidLauncherInterface.getMultipFlag() && !sentLose)
+            {
+                Gdx.app.postRunnable {
+                    androidLauncherInterface.sendLost()
+                    sentLose = true
+                }
             }
             return
         }
@@ -77,39 +87,44 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             checkForMerges()
         }
 
-        androidLauncherInterface.gameOverState(gameBoard.isGameOver)
-
         // Spawn a new gem every 1 second.
         if (gameBoard.currentGem == null && !isProcessingMerges) {
             SensorManager.VibrationPatterns.shortClick()
             spawnGem()
             //gameBoard.score++ for testing
+            if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
+            {
+                Gdx.app.postRunnable {
+                    androidLauncherInterface.updateOwnScore(gameBoard.score)
+                    prevScore = gameBoard.score
+                }
+            }
             if(androidLauncherInterface.getMultipFlag())
             {
                 androidLauncherInterface.getOpponentScore {oppScore : Int ->
                     Gdx.app.postRunnable {
                         gameBoard.multiplayerScore = oppScore
                     } }
-                if(!(getGameBoard().isGameOver))
+                if((getGameBoard().isGameOver) == false)
                 {
                     androidLauncherInterface.checkWin { hasWon ->
-                        if (hasWon == true) {
-                            gameBoard.isGameOver = true
+                        Gdx.app.postRunnable {
+                            if (hasWon == true) {
+                                gameBoard.isGameOver = true
 
+                            }
                         }
                     }
                 }
 
 
             }
-            if(prevScore != gameBoard.score && androidLauncherInterface.getMultipFlag())
-            {
-                androidLauncherInterface.updateOwnScore(gameBoard.score)
-                prevScore = gameBoard.score
-            }
+
 
 
         }
+
+        //androidLauncherInterface.gameOverState(gameBoard.isGameOver)
     }
 
     /**
@@ -170,10 +185,12 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
             val playAreaTop = gameBoard.playAreaOffsetY + GameBoard.PLAY_AREA_HEIGHT
             if (gem.y + GameBoard.GEM_SIZE > playAreaTop) {
                 gameBoard.isGameOver = true
-                if (androidLauncherInterface.getMultipFlag())
+                /*if (androidLauncherInterface.getMultipFlag())
                 {
-                    androidLauncherInterface.sendLost()
-                }
+                    Gdx.app.postRunnable {
+                        androidLauncherInterface.sendLost()
+                    }
+                }*/
             }
         } else {
             // Resolve lateral collisions by preventing movement into an occupied space
@@ -195,10 +212,12 @@ class GameState (private val androidLauncherInterface: AndroidLauncherInterface)
 
         if (isColumnOverflowed(randomX)) {
             gameBoard.isGameOver = true
-            if (androidLauncherInterface.getMultipFlag())
+            /*if (androidLauncherInterface.getMultipFlag())
             {
-                androidLauncherInterface.sendLost()
-            }
+                Gdx.app.postRunnable {
+                    androidLauncherInterface.sendLost()
+                }
+            }*/
             return
         }
 

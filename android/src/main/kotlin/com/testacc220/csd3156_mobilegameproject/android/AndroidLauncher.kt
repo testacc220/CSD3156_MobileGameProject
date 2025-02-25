@@ -319,6 +319,32 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         Log.d("hello", "adduser end func")
     }
 
+    override fun joinRoom(inRoomName: String) {
+        Log.d("hello", "joining room")
+        val db = FirebaseFirestore.getInstance()
+        db.clearPersistence()
+        val roomData = hashMapOf(
+            "player2" to currUsrname,
+            "player2score" to 0,
+            "player2Gameover" to false
+        )
+        Log.d("hello", "joining room 2")
+        db.collection("RoomData")
+            .document(inRoomName)
+            //.update("player2", currUsrname)
+            .set(roomData)
+//            .set(newScoreData)
+            .addOnSuccessListener {
+                currRoom = inRoomName
+                multiplayFlag = true
+                Log.d("hello", "DocumentSnapshot successfully written! $multiplayFlag")
+            }
+            .addOnFailureListener { e ->
+                Log.w("hello", "Error writing document", e)
+            }
+        Log.d("hello", "joining room finale")
+    }
+
     override fun checkRoomExistBefCreate(inRoomName : String, callback: (Boolean) -> Unit)
     {
         val db = FirebaseFirestore.getInstance()
@@ -360,26 +386,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
             }
     }
 
-    override fun joinRoom(inRoomName: String) {
-        Log.d("hello", "joining room")
-        val db = FirebaseFirestore.getInstance()
-        db.clearPersistence()
-        Log.d("hello", "joining room 2")
-        db.collection("RoomData")
-            .document(inRoomName)
-            //.update("player2", currUsrname)
-            .update(mapOf("player2" to currUsrname, "player2score" to 0, "player2Gameover" to false))
-//            .set(newScoreData)
-            .addOnSuccessListener {
-                currRoom = inRoomName
-                multiplayFlag = true
-                Log.d("hello", "DocumentSnapshot successfully written! $multiplayFlag")
-            }
-            .addOnFailureListener { e ->
-                Log.w("hello", "Error writing document", e)
-            }
-        Log.d("hello", "joining room finale")
-    }
+
 
     override fun checkRoomAvail(inRoomName: String, callback: (Boolean) -> Unit) {
         Log.d("Explo", "desired room name is, $inRoomName")
@@ -481,7 +488,7 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
     }
 
     override fun getMultipFlag(): Boolean {
-        Log.d("Hello", "multiplayFlag is $multiplayFlag")
+        //Log.d("Hello", "multiplayFlag is $multiplayFlag")
         return multiplayFlag
     }
 
@@ -558,47 +565,44 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         val db = FirebaseFirestore.getInstance()
         val roomRef = db.collection("RoomData").document(currRoom)
 
-        // Create a listener that can be detached later if needed
-        val listener = roomRef.addSnapshotListener { snapshot, error ->
-            if (error != null) {
-                Log.e("Hello", "Error listening for win condition", error)
-                callback(false)
-                return@addSnapshotListener
-            }
-
-            if (snapshot != null && snapshot.exists()) {
-                val player1 = snapshot.getString("player1")
-                val player2 = snapshot.getString("player2")
-                val oppP1LoseBool = snapshot.getBoolean("player1Gameover")
-                val oppP2LoseBool = snapshot.getBoolean("player2Gameover")
-
+        // Get the document once instead of using a listener
+        roomRef.get()
+            .addOnSuccessListener { snapshot ->
                 var hasWon = false
 
-                if (currUsrname == player1 ) {
-                    if(oppP2LoseBool == true)
-                    {
-                        hasWon = true
+                if (snapshot != null && snapshot.exists()) {
+                    val player1 = snapshot.getString("player1")
+                    val player2 = snapshot.getString("player2")
+                    val oppP1LoseBool = snapshot.getBoolean("player1Gameover")
+                    val oppP2LoseBool = snapshot.getBoolean("player2Gameover")
+
+                    if (currUsrname == player1) {
+                        if (oppP2LoseBool == true) {
+                            hasWon = true
+                            Log.d("Hello", "oppP2LoseBool is, $oppP2LoseBool")
+                        }
+                    } else if (currUsrname == player2) {
+                        if (oppP1LoseBool == true) {
+                            hasWon = true
+                            Log.d("Hello", "oppP1LoseBool is, $oppP1LoseBool")
+                        }
                     }
+                    Log.d("Hello", "hasWon is, $hasWon, user is $currUsrname")
+                    callback(hasWon)
                 } else {
-                    if(oppP1LoseBool == true)
-                    {
-                        hasWon = true
-                    }
+                    Log.d("Hello", "gameover Document does not exist")
+                    callback(false)
                 }
-                Log.d("Hello", "hasWon is, $hasWon")
-                callback(hasWon)
-            } else {
-                Log.d("Hello", "gameover Document does not exist")
+            }
+            .addOnFailureListener { error ->
+                Log.e("Hello", "Error checking win condition", error)
                 callback(false)
             }
-        }
-
-
     }
 
     override fun sendLost() {
         val db = FirebaseFirestore.getInstance()
-        db.clearPersistence()
+
         val roomRef = db.collection("RoomData").document(currRoom)
         roomRef.get().addOnSuccessListener { document ->
             if (document.exists()) { // Check if the document exists
@@ -609,20 +613,23 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
                     // Update the document using the DocumentReference
                     roomRef.update("player1Gameover", true)
                         .addOnSuccessListener {
-                            Log.d("Hello", "gameover updated successfully")
+                            Log.d("Hello", "gameover 1 updated successfully, for $player1")
                         }
                         .addOnFailureListener { e ->
-                            Log.e("Hello", "Error updating document", e)
+                            Log.e("Hello", "Error updating document, for $player1", e)
                         }
-                } else {
+                } else if(currUsrname == player2) {
                     // Update the document using the DocumentReference
                     roomRef.update("player2Gameover", true)
                         .addOnSuccessListener {
-                            Log.d("Hello", "gameover updated successfully")
+                            Log.d("Hello", "gameover 2 updated successfully, for $player2")
                         }
                         .addOnFailureListener { e ->
                             Log.e("Hello", "Error updating document", e)
                         }
+                }
+                else{
+                    Log.d("Hello", "gameover $currUsrname is neither!!!")
                 }
             } else {
                 Log.d("Hello", "gameover Document does not exist")
@@ -630,6 +637,8 @@ class AndroidLauncher : AndroidApplication(), AndroidLauncherInterface {
         }.addOnFailureListener { e ->
             Log.e("Hello", "Error fetching gameover document", e)
         }
+
+        //db.clearPersistence()
     }
 
 }

@@ -103,11 +103,11 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
         val labelStyle = Label.LabelStyle(skin.getFont("font"), Color.WHITE)
         labelStyle.font.data.setScale(7f)
         gameLabel = Label("Score: 1", labelStyle)
-        gameLabelOpponent = Label("Score: 123", labelStyle)
-        if(androidLauncherInterface.getMultipFlag()) {
-            gameLabelOpponent.isVisible = true
+        gameLabelOpponent = Label("", labelStyle)
+        if(androidLauncherInterface.getMultipFlag() == false) {
+            gameLabelOpponent = Label("", labelStyle)
         }else{
-            gameLabelOpponent.isVisible = false
+            //gameLabelOpponent.isVisible = false
         }
         table.setFillParent(true)
         table.top().left()//.pad(20f)  // Align to the top-left with padding
@@ -212,7 +212,11 @@ class GameScene(private val game: MainKt, private val androidLauncherInterface: 
 
         // Update UI
         gameLabel.setText("Score: ${gameState.getScore()}")
-        gameLabelOpponent.setText("Score: ${gameState.getMultiplayerScore()}")
+        if(androidLauncherInterface.getMultipFlag())
+        {
+            gameLabelOpponent.setText("Score: ${gameState.getMultiplayerScore()}")
+        }
+
         //gameLabelOpponent.setText("Score: ")
 
 
